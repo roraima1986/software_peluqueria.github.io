@@ -1,0 +1,56 @@
+:root{
+    --color-dark: #be3457;
+    --color-middle: #d35278;
+    --color-light: #e9a0b9;
+}
+
+.login-page, .content-wrapper{
+    background-image: url(../img/cerezo_2_copia.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-color: #fef6e9;
+    /*background-color: #e9ecef;*/
+}
+
+.btn-cerezo{
+    background-color: var(--color-middle);
+    color: #fff;
+}
+
+.btn-cerezo:hover{
+    background-color: var(--color-dark);
+    color: #fff;
+}
+
+.circle{
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 50%;
+    text-align: center;
+}
+
+.circle-danger{
+    background-color: #DC3545;
+    color: #fff;
+}
+
+.circle-warning{
+    background-color: #ffc107;
+}
+
+.circle-success{
+    background-color: #28A745;
+    color: #fff;
+}
+
+.info-box-number{
+    font-size: 30px;
+}
+
+/*DataTable*/
+.btn-group{
+    margin-left: 10px;
+}

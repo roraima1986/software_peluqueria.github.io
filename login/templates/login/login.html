@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {% load static %}
+    {% load widget_tweaks %}
+
+    <title>Inicio de Sesión</title>
+    <!--Favicon-->
+    <link rel="icon" href="{% static 'core/img/logo_estetica.jpeg' %}">
+    <!--Fontawesome-->
+    <link rel="stylesheet" href="{% static 'core/lib/fontawesome.css' %}">
+    <!--Sweetalert2-->
+    <link rel="stylesheet" href="{% static 'core/lib/sweetalert2/css/bootstrap-4.min.css' %}">
+    <!--AdminLTE-->
+    <link rel="stylesheet" href="{% static 'core/lib/adminlte/css/adminlte.min.css' %}">
+    {% block head %}{% endblock %}
+    <!--Mis estilos-->
+    <link rel="stylesheet" href="{% static 'core/css/styles.css' %}">
+</head>
+
+<body class="hold-transition login-page">
+<div class="login-box">
+    <div class="login-logo">
+        <a href="#">
+            <img src="{% static 'core/img/logo_barberia.jpeg' %}" alt="Logo Avila Mood" width="100" class="img-circle elevation-3">
+            <img src="{% static 'core/img/logo_estetica.jpeg' %}" alt="Logo Avila Mood" width="100" class="img-circle elevation-3">
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body login-card-body">
+            <p class="login-logo mb-3 text-center">Avila Mood</p>
+
+            <form action="." method="post" class="form-validate">
+                {% csrf_token %}
+
+                {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible text-sm">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        Su usuario y/o contraseña no coinciden. Inténtalo de nuevo.
+                    </div>
+                {% endif %}
+
+                <div class="input-group form-group mb-3">
+                    {{form.username|add_class:'form-control'|attr:'placeholder:Ingrese Usuario'|attr:'autocomplete:off'}}
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group form-group mb-3">
+                    {{form.password|add_class:'form-control'|attr:'placeholder:Ingrese Contraseña'|attr:'autocomplete:off'}}
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <!-- /.col -->
+                    <div class="col mb-3">
+                        <button type="submit" class="btn btn-cerezo btn-block">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                        </button>
+                    </div>
+                    <!-- /.col -->
+                </div>
+            </form>
+
+            <p class="mb-1 text-center">&copy; CENOBIA 2023</p>
+        </div>
+        <!-- /.login-card-body -->
+    </div>
+</div>
+<!-- /.login-box -->
+<!--JQuery-->
+<script src="{% static 'core/lib/jquery.min.js' %}"></script>
+<!--Bootstrap-->
+<script src="{% static 'core/lib/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<!--Sweetalert2-->
+<script src="{% static 'core/lib/sweetalert2/js/sweetalert2.all.min.js' %}"></script>
+<!--jquery-validation-->
+<script src="{% static 'core/lib/jquery-validation/jquery.validate.min.js' %}"></script>
+<script src="{% static 'core/lib/jquery-validation/additional-methods.min.js' %}"></script>
+<script src="{% static 'core/lib/jquery-validation/messages_es.min.js' %}"></script>
+<!--AdminLTE-->
+<script src="{% static 'core/lib/adminlte/js/adminlte.min.js' %}"></script>
+<!--Mis JS-->
+<script src="{% static 'core/js/main.js' %}" type="module"></script>
+{% block foot %}{% endblock %}
+{% block javascript %}{% endblock %}
+</body>
+</html>

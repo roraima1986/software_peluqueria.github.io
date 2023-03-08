@@ -1,0 +1,87 @@
+{% extends 'core/list.html' %}
+{% load static %}
+
+{% block title %}{{ content_title }}{% endblock %}
+
+<!--Bloque de informacion-->
+{% block info %}
+<div class="row">
+    <div class="col-sm-4 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-gradient-info"><i class="fas fa-shopping-cart"></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">Tipos de Productos</span>
+                <span class="info-box-number">{{total_product}}</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-sm-4 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-gradient-success"><i class="fas fa-check-circle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Productos Activos</span>
+                <span class="info-box-number">{{total_p_activos}}</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-sm-4 col-xs-12">
+        <div class="info-box">
+            <span class="info-box-icon bg-gradient-danger"><i class="fas fa-minus-circle"></i></span>
+
+            <div class="info-box-content">
+                <span class="info-box-text">Productos Inhabilitados</span>
+                <span class="info-box-number">{{total_p_inhab}}</span>
+            </div>
+            <!-- /.info-box-content -->
+        </div>
+    </div>
+    <!-- ./col -->
+</div>
+{% endblock %}
+
+{% block tools%}
+<div class="btn-group">
+    <button type="button" class="btn bg-gradient-info"><i class="fas fa-search"></i> Excel Detalles</button>
+    <button type="button" class="btn bg-gradient-info dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <div class="dropdown-menu" role="menu" style="">
+        <a class="dropdown-item" href="{% url 'report_excel_product_all' %}">Todo</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" data-toggle="modal" data-target="#myModalFilterDate">Filtrar</button>
+    </div>
+    <div class="modal fade" id="myModalFilterDate" data-backdrop="static"></div>
+</div>
+<a href="{{ create_url }}" class="btn bg-gradient-success btnTest">
+    <i class="fas fa-plus"></i>
+    Nuevo
+</a>
+{% endblock %}
+
+{% block columns %}
+<tr>
+    <th>Producto</th>
+    <th style="width:5%">Foto</th>
+    <th style="width:5%">Cant</th>
+    <th style="width:5%">P/compra</th>
+    <th style="width:5%">P/venta</th>
+    <th style="width:5%">Ganancia</th>
+    <th style="width:10%">Estado</th>
+    <th style="width:15%">Código de Barras</th>
+    <th style="width:12%"></th>
+</tr>
+{% endblock %}
+
+{% block rows %}{% endblock %}
+
+{% block js %}
+<script src="{% static 'product/js/list.js' %}"></script>
+<script src="{% static 'product/js/filter.js' %}"></script>
+{% endblock %}
+
+{% block javascript %}{% endblock %}

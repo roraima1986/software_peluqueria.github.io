@@ -1,0 +1,61 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block head %}
+    <!-- Datatable -->
+    <link rel="stylesheet" href="{% static 'core/lib/datatable/css/bootstrap-4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/lib/datatable/css/responsive.bootstrap4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'core/lib/datatable/css/datatable.css' %}">
+    <link rel="stylesheet" href="{% static 'core/lib/datatable/css/buttons.bootstrap4.min.css' %}">
+    {% block head_list %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+{% block info %}{% endblock %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-list-alt"></i>
+                {{content_title}}
+            </h3>
+            <div class="card-tools">
+                {% block tools%}
+                <a href="{{ create_url }}" class="btn bg-gradient-success btnTest">
+                    <i class="fas fa-plus"></i>
+                    Nuevo
+                </a>
+                {% endblock %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="data">
+                    <thead class="table bg-gradient-secondary text-white">
+                    {% block columns %}{% endblock %}
+                    </thead>
+                    <tbody>
+                    {% block rows %}{% endblock %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<!--Bloque de scripts-->
+{% block scripts %}
+    <script src="{% static 'core/lib/datatable/js/datatable.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/responsive.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/buttons.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/jszip.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/pdfmake.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/vfs_fonts.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/buttons.print.min.js' %}"></script>
+    <script src="{% static 'core/lib/datatable/js/buttons.colVis.min.js' %}"></script>
+    <!--<script src="{% static 'core/js/list.js' %}"></script>-->
+    {% block js %}{% endblock %}
+{% endblock %}
+

@@ -1,0 +1,40 @@
+{% extends 'core/list.html' %}
+{% load static %}
+
+{% block title %}{{ content_title }}{% endblock %}
+
+{% block tools%}
+<div class="btn-group">
+    <button type="button" class="btn bg-gradient-info"><i class="fas fa-search"></i> Excel Detalles</button>
+    <button type="button" class="btn bg-gradient-info dropdown-toggle dropdown-icon" data-toggle="dropdown" aria-expanded="false">
+      <span class="sr-only">Toggle Dropdown</span>
+    </button>
+    <div class="dropdown-menu" role="menu" style="">
+        <a class="dropdown-item" href="{% url 'report_excel_sale_all' %}">Todo</a>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item" data-toggle="modal" data-target="#myModalFilterDate">Filtrar</button>
+    </div>
+    <div class="modal fade" id="myModalFilterDate" data-backdrop="static"></div>
+</div>
+{% endblock %}
+
+{% block columns %}
+<tr>
+    <th>Nro</th>
+    <th>Usuario</th>
+    <th>Fecha de Registro</th>
+    <th>Total Productos</th>
+    <th>Total</th>
+    <th>Anulada</th>
+    <th style="width:12%"></th>
+</tr>
+{% endblock %}
+
+{% block rows %}{% endblock %}
+
+{% block js %}
+<script src="{% static 'sale/js/report.js' %}"></script>
+<script src="{% static 'sale/js/filter.js' %}"></script>
+{% endblock %}
+
+{% block javascript %}{% endblock %}

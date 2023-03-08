@@ -1,0 +1,120 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block head %}
+<!--select2-->
+<link rel="stylesheet" href="{% static 'core/lib/select2/css/select2.min.css' %}">
+<link rel="stylesheet" href="{% static 'core/lib/select2/css/select2-bootstrap4.min.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            {% if action == 'add' %}
+            <i class="fas fa-plus"></i>
+            {% else %}
+            <i class="far fa-edit"></i>
+            {% endif %}
+
+            {{content_title}}
+        </h3>
+        {% block btn_list %}
+        <div class="card-tools">
+            <a href="{{ list_url }}" class="btn bg-gradient-success">
+                <i class="fas fa-list-alt"></i> Lista
+            </a>
+        </div>
+        {% endblock %}
+    </div>
+    <!-- /.card-header -->
+    <div class="card-body">
+        <form method="post" action="." class="form-validate" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="{{action}}">
+            <div class="row">
+                {% for field in form.visible_fields %}
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-3">
+                    <div class="form-group">
+                        <label>
+                            {{ field.label }}
+                        </label>
+                        {{ field }}
+                        <small class="form-text text-muted">{{field.help_text}}</small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% block btn_add %}
+            <div class="d-flex justify-content-end">
+                <a href="{{ list_url }}" class="btn bg-gradient-secondary mr-2">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn bg-gradient-success">
+                    <i class="fas fa-save"></i>
+                    Guardar
+                </button>
+            </div>
+            {% endblock %}
+        </form>
+    </div>
+    <!-- /.card-body -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!--select2-->
+<script src="{% static 'core/lib/select2/js/select2.full.min.js' %}"></script>
+<script src="{% static 'core/lib/select2/js/i18n/es.js' %}"></script>
+<script src="{% static 'core/js/select2.js' %}"></script>
+{% block scripts_buy %}{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+let mensaje = '';
+{% if action == 'add' %}
+    mensaje += 'Guardado exitosamente';
+{% else %}
+    mensaje += 'Editado exitosamente';
+{% endif %}
+
+$('form').on('submit', function(e){
+    e.preventDefault();
+    let parameters = new FormData(this);
+    $.ajax({
+        url: window.location.pathname,
+        type: "POST",
+        data: parameters,
+        dataType: "json",
+        processData: false,
+        contentType: false
+    }).done(function(data){
+        if(!data.hasOwnProperty('error')){
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: mensaje,
+                showConfirmButton: false,
+                timer: 1500
+            });
+            location.href = '{{list_url}}';
+            return false;
+        };
+        message_error(data.error);
+    }).fail(function(jqXHR, textStatus, errorThrown){
+        alert(`${textStatus}: ${errorThrown}`)
+    }).always(function(data){
+
+    });
+
+});
+
+{% block add %}{% endblock %}
+</script>
+
+{% block calculo %}{% endblock %}
+
+{% endblock %}

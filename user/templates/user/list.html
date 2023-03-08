@@ -1,0 +1,25 @@
+{% extends 'core/list.html' %}
+{% load static %}
+
+{% block title %}{{ content_title }}{% endblock %}
+
+{% block columns %}
+<tr>
+    <th>Nombre</th>
+    <th>Apellido</th>
+    <th>Rut/Pasaporte</th>
+    <th>Usuario</th>
+    <th>Cód. Interno</th>
+    <th>Grupos</th>
+    <th>Activo</th>
+    <th style="width:12%"></th>
+</tr>
+{% endblock %}
+
+{% block rows %}{% endblock %}
+
+{% block js %}
+<script src="{% static 'user/js/list.js' %}"></script>
+{% endblock %}
+
+{% block javascript %}{% endblock %}
