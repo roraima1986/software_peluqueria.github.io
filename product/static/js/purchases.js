@@ -3,7 +3,7 @@ globalThis.buy = new class modulo_compras{
 //el id es la clave para capturar los valores
 // NECESARIOS PARA LLENAR EL JSON AL FINAL DEL PROCESO DE COMPRA Y MANDNARLO A LA BASE DE DATOS
     constructor(){
-        console.log('modulo de compras cargado')
+        //console.log('modulo de compras cargado')
         this.tbody= document.getElementById('product_selected')
         
         //this.producto=document.getElementById('id_product');
@@ -40,12 +40,12 @@ globalThis.buy = new class modulo_compras{
         .then( (response) => response.json())
         .then( (data) => {
             this.todos_los_productos = data;
-            console.log('todos los productos', this.todos_los_productos)
+            //console.log('todos los productos', this.todos_los_productos)
         })
         .catch( (error) => {
-            console.log('error al cargar los productos', error)
+            //console.log('error al cargar los productos', error)
         })
-        
+
 
         
     }
@@ -54,20 +54,20 @@ globalThis.buy = new class modulo_compras{
         //console.log('buscar productos..')
         let $this=this;
         let buscar= document.getElementById('listado').value;
-        console.log("buscar productos",buscar);
+        //console.log("buscar productos",buscar);
         //console.log("productos---->",$this.productos);
         const buscar_min= buscar.toLowerCase();
         const resultado= document.querySelector('#resultado');
         resultado.innerHTML='';
         if (buscar.length>=3){
-            console.log('mas de tres de largo')
+            //console.log('mas de tres de largo')
             // recorrer el array de productos
             $this.todos_los_productos.forEach(element => {
                 const nombre_min=element.name.toLowerCase();
                 const codigo=element.barcode;
                 //console.log('nombre y codigo',nombre_min,codigo)
                 if (nombre_min.indexOf(buscar_min)!== -1 || codigo.indexOf(buscar_min)!== -1){
-                    console.log("producto encontrado",element);
+                    //console.log("producto encontrado",element);
                     resultado.innerHTML+=`
                         <style>
                             #resultado{
@@ -98,7 +98,7 @@ globalThis.buy = new class modulo_compras{
             });
         }
 
-        
+
     }
 
 
@@ -109,9 +109,9 @@ globalThis.buy = new class modulo_compras{
         document.getElementById('listado').value='';
         document.querySelector('#resultado').innerHTML='';
         let id_product=id
-        console.log('id_product##',id_product)
+        //console.log('id_product##',id_product)
         let name_product=name
-        console.log('el producto es: ', name_product)
+        //console.log('el producto es: ', name_product)
         let price_buy=price_purchase
         let price_sell=price_sale
 
@@ -132,30 +132,29 @@ globalThis.buy = new class modulo_compras{
 
                 <td>
                     <input type='hidden'  readonly name='id_del_prod${id_product}' value='${id_product}'>
-
                     <input type='text'  readonly name='name_prod${id_product}' value='${name_product}' class='input_text'>
                 </td>
                 <td>
                     <input type='text'  id="cant${id_product}" oninput="buy.product_subtotal('${id_product}')" name='cant_prod${id_product}' value='' class='input_text id_p'>
                 </td>
                 <td>
-                    <input type='text'  id="pcom${id_product}"oninput="buy.product_subtotal('${id_product}')" name='buy_prod${id_product}' value='${price_buy}' class='input_text'>
+                    <input type='text'  id="pcom${id_product}" oninput="buy.product_subtotal('${id_product}')" name='buy_prod${id_product}' value='${price_buy}' class='input_text'>
                 </td>
                 <td>
-                    <input type='text'  id="pventa${id_product}"oninput="buy.product_subtotal('${id_product}')" name='sell_prod${id_product}' value='${price_sell}' class='input_text'>
+                    <input type='text'  id="pventa${id_product}" oninput="buy.product_subtotal('${id_product}')" name='sell_prod${id_product}' value='${price_sell}' class='input_text'>
                 </td>
                 <td>
                     <input type='text'  readonly id='sub${id_product}'name='subtotal_prod${id_product}' value='' class='input_text'>
                 </td>
                 <td>
-                <button type="button" onclick="buy.delete_rows('rows${id_product}','sub${id_product}')" class="btn bg-gradient-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Quitar">
+                <button type="button" onclick="buy.delete_rows('rows${id_product}','sub${id_product}')" class="btn bg-gradient-danger btn-sm" title="Quitar">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 </td>
             </tr>`
             
             this.id_productos_seleccionados.push(id_product)
-            console.log('Agregar id_productos_seleccionados', this.id_productos_seleccionados)
+            //console.log('Agregar id_productos_seleccionados', this.id_productos_seleccionados)
 
             /* let prod={
                 'id':id_product,
@@ -172,18 +171,18 @@ globalThis.buy = new class modulo_compras{
     
     delete_rows(id, id_subtotal){
         //Eliminar la fila de la tabla de compras
-        let fila =document.getElementById(id);
+        let fila = document.getElementById(id);
         this.tbody.removeChild(fila)
         // eliminar id del array de id_productos_seleccionados
         this.id_productos_seleccionados.splice(this.id_productos_seleccionados.indexOf(id),1)
-        console.log('Eliminar id_productos_seleccionados', this.id_productos_seleccionados)
+        //console.log('Eliminar id_productos_seleccionados', this.id_productos_seleccionados)
 
-       
+
     }
 
 
     new_provider(){
-        console.log('Agregar nuevo proveedor')
+        //console.log('Agregar nuevo proveedor')
         let formulario= document.getElementById('nuevo_prov');
 
         let parametros= $(formulario).serializeArray();
@@ -208,7 +207,7 @@ globalThis.buy = new class modulo_compras{
             }).done(function (data1){
                 // agregar el proveedor al select
                 if(data1.error){
-                    console.log('error.....',data1)
+                    //console.log('error.....',data1)
                     Swal.fire({
                         text:'Ya tienes un proveedor con este Rut 🙄',
                         icon:'warning',
@@ -220,7 +219,7 @@ globalThis.buy = new class modulo_compras{
                         }
                     })
                 }else{
-                    console.log('proveedor creado',data1)
+                    //console.log('proveedor creado',data1)
 
                     let select_prov=document.getElementById('id_provider');
                     select_prov.innerHTML='';
@@ -309,7 +308,7 @@ globalThis.buy = new class modulo_compras{
                     })
                 }else{
                
-                    console.log('todos los productos segunda parte',data2)
+                    //console.log('todos los productos segunda parte',data2)
                     $this.todos_los_productos=[];
                     $this.todos_los_productos=data2;
                     $('.close').click();
@@ -407,12 +406,12 @@ globalThis.buy = new class modulo_compras{
 
         let sub_prod = pcompra * cantidad;
         input_sub.value=sub_prod;
-        console.log('ide del producto:',id_prod,'subtotal:',input_sub.value)
+        //console.log('ide del producto:',id_prod,'subtotal:',input_sub.value)
 
         // hacer una funcion que recorra todos los subtotales y actualice el total de forma automatica
         this.total_valor_compra();
     }
-    total_valor_compra();{
+    total_valor_compra(){
         // calcular y colocarselo a Total P.C.
     }
 
@@ -428,7 +427,7 @@ globalThis.buy = new class modulo_compras{
                 element.subtotal = sub_prod;
             }
         });
-        console.log('actualizando el json dinamicamente',this.proveedor_productos_total.productos) */
+        //console.log('actualizando el json dinamicamente',this.proveedor_productos_total.productos) */
 
 
 

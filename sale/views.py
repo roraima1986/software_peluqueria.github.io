@@ -11,16 +11,18 @@ from .forms import SaleForm
 from django.http import JsonResponse
 from product.models import Product
 
-
+# Registrar venta
 class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     permission_required = 'sale.add_sale'
     model = Sale
     template_name = 'sale/add.html'
     form_class = SaleForm
 
+    @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
+    # Para el select de los usuarios
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
@@ -30,14 +32,17 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         data = {}
         try:
             action = request.POST['action']
-            if action == 'add':
-                form = self.get_form()
-                if form.is_valid():
-                    form.save()
-                else:
-                    data['error'] = form.errors
+            if action == 'search_products':
+                data = []
+                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']))[:10]
+                for i in prods:
+                    item = i.toJSON()
+                    item['value'] = i.name
+                    data.append(item)
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
+            if not data:
+                data.append("No se encontraron productos que coincidan con su búsqueda.")
         except Exception as e:
             data['error'] = str(e)
         return JsonResponse(data, safe=False)
@@ -80,47 +85,18 @@ class SaleListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
         context['content_title'] = 'Reporte de Venta'
         return context
 
-@csrf_exempt
-def autocomplete_products(request):
-    q = request.GET.get('term', '')
-    results = Product.objects.filter(Q(name__icontains=q) | Q(barcode__icontains=q))[:10]
-    data = []
-    for result in results:
-        data.append(f"{result.barcode} || {result.name}")
-    if not data:
-        data.append("No se encontraron productos que coincidan con su búsqueda.")
-    return  JsonResponse(data, safe=False)
-
-    return JsonResponse(recorrido, safe=False)
-
-# listado de usuarios
-# def listado_usuarios(request):
-#     print('usuarios de la venta----')jhjj
-#     try:
-#         if request.user.groups.filter(name__in=['Vendedor']).exists():
-#             print('el usuario es vendedor')
-#             usuarios = User.objects.filter(groups__name='Vendedor')
-#             data = list(usuarios.values('id','first_name','internal_code'))
-#             return JsonResponse(data, safe=False)
+# @csrf_exempt
+# def autocomplete_products(request):
+#     q = request.GET.get('term', '')
+#     results = Product.objects.filter(Q(name__icontains=q) | Q(barcode__icontains=q))[:10]
+#     data = []
+#     for result in results:
+#         data.append(f"{result.barcode} || {result.name}")
+#     if not data:
+#         data.append("No se encontraron productos que coincidan con su búsqueda.")
+#     return  JsonResponse(data, safe=False)
 #
-#         if request.user.groups.filter(name__in=['Administrador']).exists():
-#             print('el usuario es administrador')
-#             usuarios = User.objects.all().values('id','first_name','internal_code')
-#             data = list(usuarios)
-#             print('todos los usuarios',usuarios)
-#             return JsonResponse(data, safe=False)
-#
-#     except Exception as e:
-#         print('error al listar usuarios',e)
-#         return JsonResponse({'error': str(e)}, safe=False)
-#
-# def listado_productos(request):
-#     try:
-#         productos = Product.objects.filter(status='ACTIVO')
-#         data = list(productos.values('id','name','barcode','cant','price_sale'))
-#         return JsonResponse(data, safe=False)
-#     except Exception as e:
-#         return JsonResponse({'error': str(e)}, safe=False)
+#     return JsonResponse(recorrido, safe=False)
 
 
 # Reporte Excel de Venta

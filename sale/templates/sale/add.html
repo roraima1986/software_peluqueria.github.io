@@ -1,16 +1,16 @@
-{% extends 'core/add.html' %}
+{% extends 'core/list.html' %}
 {% load static %}
 {% load widget_tweaks %}
 
-{% block head %}
+{% block title %}{{ content_title }}{% endblock %}
+
+{% block head_list %}
 <!--jQuery UI-->
 <link rel="stylesheet" href="{% static 'core/lib/jquery-ui/css/jquery-ui.min.css' %}">
 <!--select2-->
 <link rel="stylesheet" href="{% static 'core/lib/select2/css/select2.min.css' %}">
 <link rel="stylesheet" href="{% static 'core/lib/select2/css/select2-bootstrap4.min.css' %}">
 {% endblock %}
-
-{% block title %}{{ content_title }}{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -40,30 +40,22 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <label>Buscar Productos</label>
-                                <input type="text" id="id-products-autocomplete" class="form-control" placeholder="Ingrese Código de Barra o Nombre del Producto">
+                                <input type="text" class="form-control" id="id-products-autocomplete" placeholder="Ingrese Código de Barra o Nombre del Producto">
                             </div>
-                            <!--Mostrar resultados de los productos-->
-                             <ul id="resultado"></ul>
 
                             <div class="row">
                                 <div class="col-12 table-responsive">
-                                    <table class="table table-sm table-bordered table-hover">
-                                        <thead class="bg-light" id="contenido_carrito">
+                                    <table id="tblProducts" class="table table-sm table-bordered table-hover">
+                                        <thead class="bg-light">
                                         <tr>
                                             <th width="15%">Código</th>
                                             <th>Productos Seleccionados</th>
                                             <th width="5%">Cantidad</th>
-                                            <th width="10%">Precio Venta</th>
+                                            <th width="10%">Precio</th>
                                             <th width="10%">Subtotal</th>
                                             <th width="5%"></th>
                                         </tr>
                                         </thead>
-                                        <form id='form_compra_merc' method="post" action="." class="form-validate"
-                                              enctype="multipart/form-data">
-                                            <tbody id="product_selected">
-                                            <!-- aqui se pushean los productos seleccionados-->
-                                            </tbody>
-                                        </form>
                                     </table>
                                 </div>
                             </div>
@@ -93,12 +85,18 @@
                                 {{form.observation}}
                             </div>
                             {% endif %}
-                            <div class="form-group">
-                                <label>{{form.total_sale.label}}</label>
+                            <label>Total</label>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                                </div>
                                 {{form.total_sale}}
                             </div>
-                            <div class="form-group">
-                                <label>{{form.total_prod.label}}</label>
+                            <label>Total Productos</label>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-cart-plus"></i></span>
+                                </div>
                                 {{form.total_prod}}
                             </div>
                         </div>
@@ -123,7 +121,7 @@
 </div>
 {% endblock %}
 
-{% block scripts %}
+{% block js %}
 <!--jQuery UI-->
 <script src="{% static 'core/lib/jquery-ui/js/jquery-ui.min.js' %}"></script>
 <!--select2-->
@@ -132,70 +130,5 @@
 <script src="{% static 'core/js/select2.js' %}"></script>
 <!---->
 <script src="{% static 'sale/js/form.js' %}"></script>
-
-{% block scripts_buy %}{% endblock %}
 {% endblock %}
 
-{% block javascript %}
-    <script>
-    // Mensaje
-    let mensaje = '';
-    {% if action == 'add' %}
-        mensaje += 'Guardado exitosamente';
-    {% else %}
-        mensaje += 'Editado exitosamente';
-    {% endif %}
-
-    // Ajax
-    $('form').on('submit', function(e){
-        e.preventDefault();
-        let parameters = new FormData(this);
-        $.ajax({
-            url: window.location.pathname,
-            type: "POST",
-            data: parameters,
-            dataType: "json",
-            processData: false,
-            contentType: false
-        }).done(function(data){
-            if(!data.hasOwnProperty('error')){
-                Swal.fire({
-                    position: 'center',
-                    icon: 'success',
-                    title: mensaje,
-                    showConfirmButton: false,
-                    timer: 1500
-                });
-                location.reload();
-                return false;
-            };
-            message_error(data.error);
-        }).fail(function(jqXHR, textStatus, errorThrown){
-            alert(`${textStatus}: ${errorThrown}`)
-        }).always(function(data){
-
-        });
-
-    });
-
-    // Autocomplete
-    $(function(){
-        $("#id-products-autocomplete").autocomplete({
-            source: "{% url 'autocomplete_products' %}",
-            minLength:3
-        });
-    });
-
-    {% block add %}{% endblock %}
-    
-    
-    </script>
-<!--    <script type="module" src="/static/sale/js/modulo_ventas.js"></script>-->
-<!--    <script>-->
-<!--        globalThis.TOKEN="{{csrf_token}}";-->
-<!--        globalThis.productos = '{{productos|safe}}';-->
-<!--    </script>-->
-
-    {% block calculo %}{% endblock %}
-
-{% endblock %}
