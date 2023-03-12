@@ -664,7 +664,10 @@ def new_buy(request):
     numero_factura= request.POST['datos_r[numero_factura]'] 
     total_compra= request.POST['datos_r[total_compra]']  
     total_productos= request.POST['datos_r[total_productos]']
-    
+
+
+
+
     # validar existencias en la db
     factura=Buy.objects.filter(n_invoice=numero_factura).exists()
     proveedor=Provider.objects.filter(id=id_proveedor).exists()
@@ -753,7 +756,7 @@ def detail_buy(request):
             # llenamos el objeto data, con la clave y valor del for del detalle
                 data= {
                     'product_id': i['product_id'],
-                    'product_name':i['product_name'],
+                    'product_name': i['product_name'],
                     'cant': i['cant'],
                     'price_purchase': i['price_purchase'],
                     'price_sale': i['price_sale'],

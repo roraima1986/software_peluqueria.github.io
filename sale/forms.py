@@ -11,7 +11,6 @@ class SaleForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
-        # show_username = kwargs.pop('show_username', False)
         super().__init__(*args, **kwargs)
         for form in self.visible_fields():
             form.field.widget.attrs['autocomplete'] = 'off'
@@ -20,9 +19,15 @@ class SaleForm(forms.ModelForm):
         self.fields['user'].widget.attrs['style'] = 'width: 100%'
         grupo = Group.objects.filter(user=user).first()
         if grupo and grupo.name == 'Vendedor':
-            self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor').exclude(is_superuser=True).values_list('internal_code', 'username')
+            self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor').exclude(is_superuser=True)
         else:
-            self.fields['user'].queryset = User.objects.all().exclude(is_superuser=True).values_list('internal_code', 'username')
+            self.fields['user'].queryset = User.objects.all().exclude(is_superuser=True)
+
+
+        # if grupo and grupo.name == 'Vendedor':
+        #     self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor').exclude(is_superuser=True).values_list('internal_code', 'username')
+        # else:
+        #     self.fields['user'].queryset = User.objects.all().exclude(is_superuser=True).values_list('internal_code', 'username')
 
     class Meta:
         model = Sale

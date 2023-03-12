@@ -1,7 +1,8 @@
 globalThis.buy = new class modulo_compras{
-// TOMAR EL ID_PRODUCTOS_SELECCIONADOS COMO REFENCIA PARA CAPTURAR TODOS VALORES
-//el id es la clave para capturar los valores
-// NECESARIOS PARA LLENAR EL JSON AL FINAL DEL PROCESO DE COMPRA Y MANDNARLO A LA BASE DE DATOS
+// GUARDAR JSON DE PRODUCTOS EN LA BASE DE DATOS
+// REVISAR LOS CAMPOS QUE SE VAN A CERO CUADO SE AGREGA UNO NUEVO
+
+
     constructor(){
         //console.log('modulo de compras cargado')
         this.tbody= document.getElementById('product_selected')
@@ -101,9 +102,9 @@ globalThis.buy = new class modulo_compras{
 
     }
 
-
+    //capturar el valor de los campos del formulario
     agregar_celda(id,barcode,name,price_purchase,price_sale){
-        //capturar el valor de los campos del formulario
+
         console.log('agregar celda',id)
         // limpiar el campo de busqueda y el resultado
         document.getElementById('listado').value='';
@@ -129,25 +130,30 @@ globalThis.buy = new class modulo_compras{
             }
             </style>
             <tr id='rows${id_product}'>
-
                 <td>
-                    <input type='hidden'  readonly name='id_del_prod${id_product}' value='${id_product}'>
-                    <input type='text'  readonly name='name_prod${id_product}' value='${name_product}' class='input_text'>
+                  <!--<input type='hidden'  readonly name='id_del_prod${id_product}' value='${id_product}'>-->
+                    <input type='text' readonly id="name_prod${id_product}"
+                        name='name_prod${id_product}'
+                        value='${name_product}' class='input_text'>
                 </td>
                 <td>
-                    <input type='text'  id="cant${id_product}" oninput="buy.product_subtotal('${id_product}')" name='cant_prod${id_product}' value='' class='input_text id_p'>
+                    <input type='number' id="cant${id_product}"
+                        oninput="buy.product_subtotal('${id_product}')" name='cant_prod${id_product}' class='input_text id_p'>
                 </td>
                 <td>
-                    <input type='text'  id="pcom${id_product}" oninput="buy.product_subtotal('${id_product}')" name='buy_prod${id_product}' value='${price_buy}' class='input_text'>
+                    <input type='number'  id="pcom${id_product}"
+                        oninput="buy.product_subtotal('${id_product}')" name='buy_prod${id_product}'
+                        value='${price_buy}' class='input_text'>
                 </td>
                 <td>
-                    <input type='text'  id="pventa${id_product}" oninput="buy.product_subtotal('${id_product}')" name='sell_prod${id_product}' value='${price_sell}' class='input_text'>
+                    <input type='number'  id="pventa${id_product}" oninput="buy.product_subtotal('${id_product}')"
+                    name='sell_prod${id_product}' value='${price_sell}' class='input_text'>
                 </td>
                 <td>
-                    <input type='text'  readonly id='sub${id_product}'name='subtotal_prod${id_product}' value='' class='input_text'>
+                    <input type='number'  readonly id='sub${id_product}'name='subtotal_prod${id_product}' value='' class='input_text'>
                 </td>
                 <td>
-                <button type="button" onclick="buy.delete_rows('rows${id_product}','sub${id_product}')" class="btn bg-gradient-danger btn-sm" title="Quitar">
+                <button type="button" onclick="buy.delete_rows('rows${id_product}','sub${id_product}','cant${id_product}')" class="btn bg-gradient-danger btn-sm" title="Quitar">
                     <i class="fas fa-trash-alt"></i>
                 </button>
                 </td>
@@ -164,20 +170,34 @@ globalThis.buy = new class modulo_compras{
                 'cant':0,
                 'subtotal':0
             }
-            this.proveedor_productos_total.productos.push(prod)
-            console.log('se agrego row de producto', this.proveedor_productos_total) */
+            this.proveedor_productos_total.productos.push(prod)*/
 
     }
     
-    delete_rows(id, id_subtotal){
+    delete_rows(id, id_subtotal, id_cant){
+        // Actualizar el total a pagar descontar el subtotal de la celda borrada
+
+        let value_subtotal=document.getElementById(id_subtotal).value;
+        this.proveedor_productos_total.total_compra=this.proveedor_productos_total.total_compra - value_subtotal;
+
+        // Campo total
+        let final_pago = document.getElementById('id_total')
+        final_pago.value =this.proveedor_productos_total.total_compra;
+
+        // capturar el producto que se esta quitando
+        console.log("viene",id_cant)
+        console.log("Actualiz", document.getElementById(id_cant))
+        let sub_pro = document.getElementById(id_cant).value;
+
+        //renderizar
+        this.proveedor_productos_total.total_productos = this.proveedor_productos_total.total_productos - sub_pro;
+        document.getElementById('id_total_prod').value = this.proveedor_productos_total.total_productos;
+
         //Eliminar la fila de la tabla de compras
         let fila = document.getElementById(id);
         this.tbody.removeChild(fila)
-        // eliminar id del array de id_productos_seleccionados
+        // Eliminar id del array de id_productos_seleccionados
         this.id_productos_seleccionados.splice(this.id_productos_seleccionados.indexOf(id),1)
-        //console.log('Eliminar id_productos_seleccionados', this.id_productos_seleccionados)
-
-
     }
 
 
@@ -329,13 +349,41 @@ globalThis.buy = new class modulo_compras{
     }
 
     guardar_compra(){
-        // validamos que el proveedor este seleccionado
         let proveedor = document.getElementById('id_provider').value;
+        console.log('proveedor',proveedor)
         let factura = document.getElementById('id_n_invoice').value;
+        console.log('factura',factura)
         let fecha_factura = document.getElementById('id_date_invoice').value;
+        console.log('fecha_factura',fecha_factura)
         let fecha_hoy = document.getElementById('id_date_register').value;
+        console.log('fecha_hoy',fecha_hoy)
 
         // tomar valores de los productos seleccionados con el array de id_productos_seleccionados
+        console.log("this.id_productos_seleccionados",this.id_productos_seleccionados)
+        let recorrido = {
+            'product_id':'',
+            'product_name': '',
+            'cant': '',
+            'price_purchase': '',
+            'price_sale': '',
+            'subtotal_prod': '',
+        };
+        this.id_productos_seleccionados.forEach(element => {
+            recorrido.product_id = element;
+            recorrido.product_name = document.getElementById(`name_prod${element}`).value;
+            recorrido.cant = document.getElementById(`cant${element}`).value;
+            recorrido.price_purchase = document.getElementById(`pcom${element}`).value;
+            recorrido.price_sale = document.getElementById(`pventa${element}`).value;
+            recorrido.subtotal_prod = document.getElementById(`sub${element}`).value;
+
+            this.proveedor_productos_total.productos.push(recorrido)
+
+            recorrido = {}
+
+        })
+
+        console.log('Lo que se va a enviar',this.proveedor_productos_total)
+
 
 
         if(fecha_factura.length <=0){
@@ -406,31 +454,50 @@ globalThis.buy = new class modulo_compras{
 
         let sub_prod = pcompra * cantidad;
         input_sub.value=sub_prod;
-        //console.log('ide del producto:',id_prod,'subtotal:',input_sub.value)
 
-        // hacer una funcion que recorra todos los subtotales y actualice el total de forma automatica
-        this.total_valor_compra();
-    }
-    total_valor_compra(){
-        // calcular y colocarselo a Total P.C.
+        this.calculo_total_pagar()
+
     }
 
 
-        // actualizar el subtotal en el objeto
-        // toda esta vaina es mejor hacerla al momento de procesar la compra y listo
+    calculo_total_pagar(){ // Y total productos
+        this.proveedor_productos_total.total_compra = 0;
+        this.proveedor_productos_total.total_productos = 0;
+        // recorrer todos los subtotales, con el array global de ids
+        console.log("array",this.id_productos_seleccionados)
+        let valores=0;
+        let total_compra= 0;
 
-        /* this.proveedor_productos_total.productos.forEach(element => {
-            if(element.id_producto == id_prod){
-                element.price_buy = pcompra;
-                element.cant= cantidad;
-                element.price_sell= precio_venta;
-                element.subtotal = sub_prod;
-            }
-        });
-        //console.log('actualizando el json dinamicamente',this.proveedor_productos_total.productos) */
+        let total_productos=0;
+        let productos=0;
+
+        this.id_productos_seleccionados.forEach(element => {
+            // sumarlos
+            let val= document.getElementById(`sub${element}`).value;
+
+            valores = isNaN(val)? 0 : val;
+            total_compra = parseInt(total_compra) + parseInt(valores);
+
+            // Productos
+            let prod= document.getElementById(`cant${element}`).value;
+            productos = isNaN(prod)? 0 : prod;
+            total_productos = parseInt(total_productos) + parseInt(productos);
+        })
+
+        // agregar monto al total
+        this.proveedor_productos_total.total_compra = total_compra;
+        // renderizar el total
+        let final_pago = document.getElementById('id_total');
+        final_pago.value = this.proveedor_productos_total.total_compra;
+
+        // cantidad de productos seleccionados
+        this.proveedor_productos_total.total_productos = total_productos;
+        // renderizar el total
+        let final_productos = document.getElementById('id_total_prod');
+        final_productos.value = this.proveedor_productos_total.total_productos;
 
 
-
+    }
 }
 
 

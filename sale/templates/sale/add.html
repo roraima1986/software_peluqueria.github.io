@@ -28,7 +28,7 @@
     </div>
     <!-- /.card-header -->
     <div class="card-body">
-        <form method="post" action="." class="form-validate" enctype="multipart/form-data">
+        <form method="post" class="form-validate">
             {% csrf_token %}
             <input type="hidden" name="action" value="{{action}}">
             <div class="row">

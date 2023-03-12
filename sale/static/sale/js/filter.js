@@ -4,7 +4,7 @@ let modal = document.getElementById('myModalFilterDate');
 let html;
 
 html = `
-<form method="get" action="#" class="form-validate">
+<form method="get" action="/sale/report_excel_sale_filter/" class="form-validate">
 <div class="modal-dialog modal-dialog-scrollable modal-lg">
     <div class="modal-content">
         <div class="modal-header">
@@ -43,10 +43,10 @@ html = `
                 </div>
                 <div class="form-group">
                     <label>Personal</label>
-                    <select class="form-control" name="cbo_provider" id="cbo-provider"></select>
+                    <select class="form-control select2bs4" name="cbo_user" id="cbo-user"></select>
                 </div>
                 <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                    <input type="checkbox" class="form-check-input" name="chk_anulada">
                     <label>Ventas Anuladas</label>
                 </div>
             </div>
@@ -76,21 +76,21 @@ modal.innerHTML = html;
 
 
 // LLenar select de proveedores
-const listarProveedores = async () => {
+const listarUsers = async () => {
     try{
-        const response = await fetch("/product/get_providers/");
+        const response = await fetch("/sale/get_users/");
         const data = await response.json();
 
         if(data.message === 'Success'){
             let opciones = `<option value="">----------</option>`;
-            let cbo_provider = document.getElementById('cbo-provider');
+            let cbo_user = document.getElementById('cbo-user');
 
-            data.providers.forEach((provider) => {
-                opciones += `<option value="${provider.id}">${provider.name}</option>`
+            data.users.forEach((user) => {
+                opciones += `<option value="${user.id}">${user.username}</option>`
             });
-            cbo_provider.innerHTML = opciones;
+            cbo_user.innerHTML = opciones;
         }else{
-            console.log('Proveedores no encontrados');
+            console.log('Usuarios no encontrados');
         }
     }catch(error){
         console.log(error);
@@ -98,7 +98,7 @@ const listarProveedores = async () => {
 }
 
 const cargaInicial = async () => {
-    await listarProveedores();
+    await listarUsers();
 };
 
 window.addEventListener("DOMContentLoaded", async () => {

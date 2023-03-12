@@ -1,5 +1,8 @@
+let tblSale;
+
 $(function(){
-    $('#data').DataTable({
+    tblSale = $('#data').DataTable({
+        "order": [0, 'desc'],
         responsive: true,
         autoWidth: false,
         destroy: true,
@@ -40,15 +43,13 @@ $(function(){
                 render: function(data, type, row){
                     let buttons = `
                         <div class="d-flex justify-content-around">
-                            <button  type="button" onclick="detail('${row.id}', '${row.date_creation}', '${row.user}', '${row.type_sale}', '${row.observation}', '${row.total_prod}', '${row.total_sale}')"
-                                class="btn btn-sm bg-gradient-info" data-toggle="modal" data-target="#myModalSale">
+                            <a rel="details" class="btn btn-sm bg-gradient-info" data-toggle="modal" data-target="#myModalSale">
                                 <i class="fas fa-eye"></i> Detalle
-                            </butto>
+                            </a>
                             <button class="btn btn-sm bg-gradient-danger">
                                 <i class="fas fa-ban"></i> Anular
                             </button>
                         </div>
-                        <div class="modal fade" id="myModalSale" data-backdrop="static"></div>
                     `;
                     return buttons;
                 }
@@ -302,126 +303,53 @@ $(function(){
             }
         }
     });
+
+    $('#data').on('click', 'a[rel="details"]', function(){
+        let tr = tblSale.cell($(this).closest('td, li')).index();
+        let data = tblSale.row(tr.row).data();
+
+        $('#tblDet').DataTable({
+            "order": [0, 'desc'],
+            dom: '',
+            responsive: true,
+            autoWidth: false,
+            destroy: true,
+            "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "Todo"] ],
+            deferRender: true,
+            ajax: {
+                    url: window.location.pathname,
+                    type: 'POST',
+                    data: {
+                        'action':'search_details_prod',
+                        'id': data.id
+                    },
+                    dataSrc: ""
+            },
+            columns: [
+                {"data": "barcode"},
+                {"data": "name"},
+                {"data": "cant"},
+                {"data": "price_sale"},
+                {"data": "subtotal"}
+            ],
+            columnDefs: [
+                {
+                    targets: [-1, -2],
+                    render: function(data, type, row){
+                        return '$'+data;
+                    }
+                },
+                { responsivePriority: 1, targets: 0 },
+                { responsivePriority: 2, targets: -1 }
+            ],
+            initComplete: function(settings, json){
+                //alert('Tabla cargada');
+            }
+        });
+
+        $("#myModalDet").modal('show');
+    });
+
 });
 
-function detail(id, date_creation, user, type_sale, observation, total_prod, total_sale){
-//detalle.detalle_de_compra(id);
 
-let modal = document.getElementById('myModalSale');
-let html;
-
-html = `
-<div class="modal-dialog modal-dialog-scrollable modal-xl">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h4 class="modal-title text-break">Venta N° ${id}</h4>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <div class="modal-body">
-            <div class="p-3 mb-3">
-                <!-- info row -->
-                <div class="row">
-                    <div class="col-12 table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th>Fecha/Hora</th>
-                                    <th>Usuario</th>
-                                    <th>Tipo de Salida</th>
-                                    <th>Observación</th>
-                                </tr>
-
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>${date_creation}</td>
-                                    <td>${user}</td>
-                                    <td>${type_sale}</td>
-                                    <td class="text-break">${observation}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <!-- /.row -->
-
-                <!-- Table row -->
-                <div class="row">
-                    <div class="col-12 table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead class="bg-light text-center">
-                            <tr>
-                                <th>Código</th>
-                                <th width="40%">Producto</th>
-                                <th>Cant</th>
-                                <th>P/Venta</th>
-                                <th>Subtotal</th>
-                            </tr>
-                            </thead>
-                            <tbody id="this_detail">
-                            <!-- <tr>
-                                <td class="text-break"></td>
-                                <td class="text-center"></td>
-                                <td class="text-right">$ </td>
-                                <td class="text-right">$ </td>
-                                <td class="text-right">$ </td>
-                            </tr> -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- /.col -->
-                </div>
-                <!-- /.row -->
-
-                <div class="row">
-                    <div class="col-md-8"></div>
-                    <!-- /.col -->
-                    <div class="col-md-4">
-
-                        <div class="table-responsive">
-                            <table class="table">
-                                <tbody>
-                                <tr>
-                                    <th width="60%">Total:</th>
-                                    <td class="text-right">$ ${total_sale}</td>
-                                </tr>
-                                <tr>
-                                    <th>Total cantidad de Productos:</th>
-                                    <td class="text-right">${total_prod}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- /.col -->
-                </div>
-                <!-- /.row -->
-            </div>
-
-            <!-- <table class="table table-bordered">
-                <tbody>
-                <tr>
-                    <th>Fecha Registro</th>
-                    <td>
-
-                    </td>
-                    <th>Fecha Edicion</th>
-                    <td>
-                    </td>
-                </tr>
-                </tbody>
-            </table> -->
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn bg-gradient-danger" data-dismiss="modal">Cerrar</button>
-        </div>
-    </div>
-    <!-- /.modal-content -->
-</div>
-<!-- /.modal-dialog -->
-`;
-
-modal.innerHTML = html;
-}

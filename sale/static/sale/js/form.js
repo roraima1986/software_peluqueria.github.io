@@ -364,13 +364,15 @@ $(function(){
         }
     });
 
-    // Evento de cantidad
+
     $('#tblProducts')
+        // Remover elementos de la table
         .on('click', 'a[rel="remove"]', function(){
             let tr = tblProducts.cell($(this).closest('td, li')).index();
             vents.items.output_products.splice(tr.row, 1);
             vents.list();
         })
+        // Evento de cantidad
         .on('change keyup', '#cant_p', function(){
             let = cant_p = parseInt($(this).val());
             let tr = tblProducts.cell($(this).closest('td, li')).index();
@@ -380,6 +382,47 @@ $(function(){
             $('td:eq(4)', tblProducts.row(tr.row).node()).html('$'+vents.items.output_products[tr.row].subtotal);
         }
     );
+
+    const form = $('form');
+    delete vents.items.form;
+
+    // Evento submit (Boton Guardar o Procesar)
+    form.on('submit', function(e){
+        e.preventDefault();
+        vents.items.user = $('select[name="user"]').val();
+        vents.items.type_sale = $('select[name="type_sale"]').val();
+        vents.items.observation = $('input[name="observation"]').val();
+
+        let parameters = new FormData();
+        parameters.append('action', $('input[name="action"]').val());
+        parameters.append('vents', JSON.stringify(vents.items));
+        $.ajax({
+            url: window.location.pathname,
+            type: "POST",
+            data: parameters,
+            dataType: "json",
+            processData: false,
+            contentType: false
+        }).done(function(data){
+            if(!data.hasOwnProperty('error')){
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Venta guardada exitosamente',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+                location.reload();
+                return false;
+            };
+            message_error(data.error);
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            alert(`${textStatus}: ${errorThrown}`)
+        }).always(function(data){
+
+        });
+    });
 
     // Fecha
     let date_sale = document.getElementById('date-sale');
