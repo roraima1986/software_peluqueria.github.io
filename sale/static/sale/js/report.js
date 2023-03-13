@@ -39,7 +39,7 @@ $(function(){
                 render: function(data, type, row){
                     let html = '';
                     if(row.is_canceled === true){
-                        html += `<big><big><span class="text-danger"><i class="fas fa-ban"></i></span></big></big>`;
+                        html += `<span class="badge badge-light">Anulada</span>`;
                     }
                     return html;
                 }
@@ -53,9 +53,9 @@ $(function(){
                             <a rel="details" class="btn btn-sm bg-gradient-info" data-toggle="modal" data-target="#myModalSale">
                                 <i class="fas fa-eye"></i> Detalle
                             </a>
-                            <button class="btn btn-sm bg-gradient-danger">
+                            <a rel="cancel" class="btn btn-sm bg-gradient-danger">
                                 <i class="fas fa-ban"></i> Anular
-                            </button>
+                            </a>
                         </div>
                     `;
                     return buttons;
@@ -66,6 +66,12 @@ $(function(){
         ],
         initComplete: function(settings, json){
             //alert('Tabla cargada');
+        },
+        rowCallback: function(row, data, index) {
+            if (data.is_canceled === true) {
+                $(row).addClass('bg-danger');
+                $(row).find('a[rel="cancel"]').addClass('bg-gradient-danger disabled');
+            }
         },
         "language": {
             "processing": "Procesando...",
@@ -311,6 +317,7 @@ $(function(){
         }
     });
 
+    // Detalle de ventas
     $('#data').on('click', 'a[rel="details"]', function(){
         let tr = tblSale.cell($(this).closest('td, li')).index();
         let data = tblSale.row(tr.row).data();
@@ -355,6 +362,51 @@ $(function(){
         });
 
         $("#myModalDet").modal('show');
+    });
+
+    // Anular venta
+    $('#data').on('click', 'a[rel="cancel"]', function(){
+        const saleId = $(this).closest('tr').find('td:first-child').text();
+        Swal.fire({
+            title: 'Anular Venta',
+            text: "Al aceptar esta acción no se podrán deshacer los cambios",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: window.location.pathname,
+                    type: "POST",
+                    data: {
+                        action: 'cancel_sale',
+                        id: saleId
+                    },
+                    dataType: "json"
+//                    processData: false,
+//                    contentType: false
+                }).done(function(data){
+                    if(!data.hasOwnProperty('error')){
+                        Swal.fire(
+                            'Venta Anulada',
+                            'Tu venta ha sido anulada',
+                            'success'
+                        );
+                        $(this).hide();
+                        location.reload();
+                        return false;
+                    };
+                    message_error(data.error);
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    alert(`${textStatus}: ${errorThrown}`)
+                }).always(function(data){
+
+                });
+            }
+        })
     });
 
 });

@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import CreateView, ListView
 from openpyxl import Workbook
@@ -106,6 +107,21 @@ class SaleListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                 for s in sales:
                     for det in s.output_products:
                         data.append(det)
+            elif action == 'cancel_sale':
+                sale_id = request.POST['id']
+                sale = Sale.objects.get(id=sale_id)
+                sale.is_canceled = True
+                sale.save()
+                data['success'] = 'La venta ha sido cancelada'
+                # Obtener cantidad de los productos de la venta
+                for prod in sale.output_products:
+                    id_sale_prod = prod['id']
+                    cant_sale_prod = prod['cant']
+                    # Obtener productos del inventario
+                    products = Product.objects.get(id=id_sale_prod)
+                    # restar productos del inventario
+                    products.cant = int(products.cant) + int(cant_sale_prod)
+                    products.save()
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
