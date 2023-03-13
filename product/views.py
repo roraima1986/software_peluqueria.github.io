@@ -687,7 +687,7 @@ def new_buy(request):
                         id_producto=i['id_producto']
                         buscar= Product.objects.filter(id=id_producto).exists()
                         if buscar:
-                            # rellenar el stock de los pructos y actualizar los precios de compra y venta
+                            # rellenar el stock de los productos y actualizar los precios de compra y venta
                             producto=Product.objects.get(id=id_producto)
                             producto.cant= int(producto.cant) + int(i['cantidad'])
                             producto.price_purchase=i['precio_compra']
@@ -748,9 +748,9 @@ def new_buy(request):
 def detail_buy(request):
     data={}
     recorrido=[]
-    id_detalle=request.GET['id_detalle']
+    id_detalle = request.GET['id_detalle']
     try:
-        compra=Buy.objects.get(id=id_detalle)
+        compra = Buy.objects.get(id=id_detalle)
         if compra:
             for i in compra.shopping_products:
             # llenamos el objeto data, con la clave y valor del for del detalle
@@ -946,24 +946,12 @@ def get_providers(request):
 
 
 # Carga de productos en el menu de compras cuando se hace una buqueda
-
 def todos_products_compra(request):
     print("++entro++")
     data = list(Product.objects.all().values('id','name','barcode','price_purchase','price_sale'))
     return  JsonResponse(data, safe=False)
 
 
-""" @csrf_exempt
-def autocomplete_products_compra(request):
-    q = request.GET.get('term', '')
-    results = Product.objects.filter(Q(name__icontains=q) | Q(barcode__icontains=q))[:10]
-    data = []
-    for result in results:
-        data.append(f" {result.barcode} || {result.name} || P.Compra: {result.price_purchase} || P.Venta: {result.price_sale}")
-    if not data:
-        data.append("No se encontraron productos que coincidan con su búsqueda.")
-    return  JsonResponse(data, safe=False)
-"""
 
 
 

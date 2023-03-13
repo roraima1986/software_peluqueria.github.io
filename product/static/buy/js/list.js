@@ -26,6 +26,13 @@ $(function(){
         ],
         columnDefs: [
             {
+                targets: [-2],
+                orderable: false,
+                render: function(data, type, row){
+                    return '$'+row.total;
+                }
+            },
+            {
                 targets: [-1],
                 class: 'text-center',
                 orderable: false,

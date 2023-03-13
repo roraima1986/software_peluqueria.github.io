@@ -63,6 +63,13 @@ $(function(){
                     }
                 }
             },
+            {
+                targets: [3, 4, 5],
+                orderable: false,
+                render: function(data, type, row){
+                    return '$'+data;
+                }
+            },
             // Estado
             {
                 targets: [-3],

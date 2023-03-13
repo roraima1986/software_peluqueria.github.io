@@ -27,6 +27,13 @@ $(function(){
         ],
         columnDefs: [
             {
+                targets: [-3],
+                orderable: false,
+                render: function(data, type, row){
+                    return '$'+row.total_sale;
+                }
+            },
+            {
                 targets: [-2],
                 orderable: false,
                 render: function(data, type, row){

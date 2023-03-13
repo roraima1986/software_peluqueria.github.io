@@ -1,5 +1,7 @@
 import datetime
 import json
+
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.db.models import Q
@@ -38,7 +40,7 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             action = request.POST['action']
             if action == 'search_products':
                 data = []
-                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']))[:10]
+                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']), Q(cant__gt=0))[:10]
                 for i in prods:
                     item = i.toJSON()
                     item['value'] = i.name
@@ -48,7 +50,6 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                 user_id = vents['user']
                 user = User.objects.get(id=user_id)
                 sale = Sale()
-                # sale.user = vents['user']
                 sale.user = user
                 sale.type_sale = vents['type_sale']
                 sale.observation = vents['observation']
@@ -56,10 +57,18 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                 sale.total_prod = int(vents['total_prod'])
                 sale.output_products = vents['output_products']
                 sale.save()
+                # Obtener cantidad de los productos de la venta
+                for prod in sale.output_products:
+                    id_sale_prod = prod['id']
+                    cant_sale_prod = prod['cant']
+                    # Obtener productos del inventario
+                    products = Product.objects.get(id=id_sale_prod)
+                    # restar productos del inventario
+                    products.cant = int(products.cant) - int(cant_sale_prod)
+                    products.save()
+
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
-            # if not data:
-            #     data.append("No se encontraron productos que coincidan con su búsqueda.")
         except Exception as e:
             data['error'] = str(e)
         return JsonResponse(data, safe=False)
