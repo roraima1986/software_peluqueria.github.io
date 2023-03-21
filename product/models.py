@@ -71,10 +71,9 @@ class Product(BaseModel):
     barcode = models.CharField(max_length=20, unique=True, verbose_name='Código de Barra')
     category = models.ForeignKey(Category, on_delete=models.PROTECT, verbose_name='Categoría')
     range_stock = models.IntegerField(verbose_name='Stock Minimo')
-    cant = models.IntegerField(verbose_name='Cantidad')
-    price_purchase = models.IntegerField(verbose_name='Precio Compra')
-    price_sale = models.IntegerField(verbose_name='Precio Venta')
-    ganancy = models.IntegerField(verbose_name='Ganancia', null=True, blank=True)
+    cant = models.IntegerField(verbose_name='Cantidad', default=0)
+    price_purchase = models.IntegerField(verbose_name='Precio Compra', default=0)
+    price_sale = models.IntegerField(verbose_name='Precio Venta', default=0)
     status = models.CharField(max_length=15, choices=[('ACTIVO', 'ACTIVO'), ('INHABILITADO', 'INHABILITADO')],
                               default='ACTIVO', verbose_name='Estado')
     photo = models.ImageField(upload_to='product/%Y/%m/%d', null=True, blank=True, verbose_name='Foto del Producto', validators=[validate_image_size])
@@ -108,8 +107,7 @@ class Buy(BaseModel):
     date_register = models.DateField(verbose_name='Fecha de Registro')
     n_invoice = models.IntegerField(verbose_name='N° Factura', null=True, blank=True)
     date_invoice = models.DateField(verbose_name='Fecha de Factura', null=True, blank=True)
-    product = models.ForeignKey(Product, on_delete=models.PROTECT,null=True, blank=True, verbose_name='Producto')
-    total_prod = models.IntegerField(verbose_name='Total Productos',default=0)
+    total_prod = models.IntegerField(verbose_name='Total Productos', default=0)
     total = models.IntegerField(verbose_name='Total P.C.',default=0)
     shopping_products=models.JSONField(null=True, blank=True, verbose_name='Productos Comprados')
     """

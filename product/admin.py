@@ -12,12 +12,12 @@ class ProviderAdmin(admin.ModelAdmin):
     readonly_fields = ['user_creation', 'date_creation', 'user_updated', 'date_updated']
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'barcode', 'category', 'range_stock', 'cant', 'price_purchase', 'price_sale', 'ganancy', 'status', 'user_creation', 'date_creation', 'user_updated', 'date_updated']
+    list_display = ['name', 'barcode', 'category', 'range_stock', 'cant', 'price_purchase', 'price_sale', 'status', 'user_creation', 'date_creation', 'user_updated', 'date_updated']
     list_display_links = ['name']
     readonly_fields = ['user_creation', 'date_creation', 'user_updated', 'date_updated']
 
 class BuyAdmin(admin.ModelAdmin):
-    list_display = ['id', 'provider', 'date_register', 'n_invoice', 'date_invoice', 'product', 'total_prod', 'total', 'user_creation', 'date_creation', 'user_updated', 'date_updated']
+    list_display = ['id', 'provider', 'date_register', 'n_invoice', 'date_invoice', 'total_prod', 'total', 'user_creation', 'date_creation', 'user_updated', 'date_updated']
     list_display_links = ['id', 'provider']
     readonly_fields = ['user_creation', 'date_creation', 'user_updated', 'date_updated']
 

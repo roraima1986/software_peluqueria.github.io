@@ -1,7 +1,5 @@
 import datetime
 import json
-
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.models import Group
 from django.db.models import Q
@@ -41,7 +39,7 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             action = request.POST['action']
             if action == 'search_products':
                 data = []
-                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']), Q(cant__gt=0))[:10]
+                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']), Q(cant__gt=0), Q(status='ACTIVO'))[:10]
                 for i in prods:
                     item = i.toJSON()
                     item['value'] = i.name
@@ -67,7 +65,6 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     # restar productos del inventario
                     products.cant = int(products.cant) - int(cant_sale_prod)
                     products.save()
-
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
         except Exception as e:
@@ -130,7 +127,7 @@ class SaleListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Reportes'
+        context['title'] = 'Reporte de Venta'
         context['content_title'] = 'Reporte de Venta'
         return context
 
@@ -148,12 +145,13 @@ def report_excel_sale_all(_request):
     ws.column_dimensions['D'].width = 15
     ws.column_dimensions['E'].width = 30
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 15
+    ws.column_dimensions['G'].width = 25
     ws.column_dimensions['H'].width = 15
     ws.column_dimensions['I'].width = 40
     ws.column_dimensions['J'].width = 10
     ws.column_dimensions['K'].width = 15
     ws.column_dimensions['L'].width = 15
+    ws.column_dimensions['M'].width = 15
 
     # cabecera
     ws['A1'] = 'NRO'
@@ -162,12 +160,13 @@ def report_excel_sale_all(_request):
     ws['D1'] = 'TIPO DE VENTA'
     ws['E1'] = 'OBSERVACIÓN'
     ws['F1'] = 'TOTAL PRODUCTOS'
-    ws['G1'] = 'TOTAL P/COMPRA'
+    ws['G1'] = 'TOTAL GRAL P/VENTA'
     ws['H1'] = 'CÓDIGO'
     ws['I1'] = 'NOMBRE PRODUCTO'
     ws['J1'] = 'CANT'
-    ws['K1'] = 'P/VENTA'
-    ws['L1'] = 'SUBTOTAL'
+    ws['K1'] = 'P/COMPRA'
+    ws['L1'] = 'P/VENTA'
+    ws['M1'] = 'SUBTOTAL'
 
     # Iniciar en la 2da fila
     cont = 2
@@ -184,13 +183,15 @@ def report_excel_sale_all(_request):
 
         # Obtener valores de la lista de productos
         ventas = sale.output_products
+
         # Recorrer lista de productos
         for v in ventas:
             ws.cell(row=cont, column=8).value = v['barcode']
             ws.cell(row=cont, column=9).value = v['name']
             ws.cell(row=cont, column=10).value = int(v['cant'])
-            ws.cell(row=cont, column=11).value = int(v['price_sale'])
-            ws.cell(row=cont, column=12).value = int(v['subtotal'])
+            ws.cell(row=cont, column=11).value = '' # Precio de compra
+            ws.cell(row=cont, column=12).value = int(v['price_sale'])
+            ws.cell(row=cont, column=13).value = int(v['subtotal'])
             cont += 1
 
         cont += 1
@@ -206,6 +207,7 @@ def report_excel_sale_all(_request):
 # Reporte Excel de Venta (Filtrar ventas)
 def report_excel_sale_filter(request):
     user = request.GET['cbo_user']
+    cbo_type_sale = request.GET['cbo_type_sale']
     chk_anulada = request.GET.get('chk_anulada', None)
 
     # Trae todas las ventas
@@ -230,6 +232,10 @@ def report_excel_sale_filter(request):
     # Filtra las ventas por rango de fecha y hora
     sales = Sale.objects.filter(date_creation__range=(start_datetime, finish_datetime))
 
+    # Filtro por tipo de salida de la venta
+    if cbo_type_sale:
+        sales = sales.filter(type_sale=cbo_type_sale)
+
     # Filtro por personal
     if user:
         sales = sales.filter(user=user)
@@ -249,12 +255,13 @@ def report_excel_sale_filter(request):
     ws.column_dimensions['D'].width = 15
     ws.column_dimensions['E'].width = 30
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 15
+    ws.column_dimensions['G'].width = 25
     ws.column_dimensions['H'].width = 15
     ws.column_dimensions['I'].width = 40
     ws.column_dimensions['J'].width = 10
     ws.column_dimensions['K'].width = 15
     ws.column_dimensions['L'].width = 15
+    ws.column_dimensions['M'].width = 15
 
     # cabecera
     ws['A1'] = 'NRO'
@@ -263,12 +270,13 @@ def report_excel_sale_filter(request):
     ws['D1'] = 'TIPO DE VENTA'
     ws['E1'] = 'OBSERVACIÓN'
     ws['F1'] = 'TOTAL PRODUCTOS'
-    ws['G1'] = 'TOTAL P/COMPRA'
+    ws['G1'] = 'TOTAL GRAL P/VENTA'
     ws['H1'] = 'CÓDIGO'
     ws['I1'] = 'NOMBRE PRODUCTO'
     ws['J1'] = 'CANT'
-    ws['K1'] = 'P/VENTA'
-    ws['L1'] = 'SUBTOTAL'
+    ws['K1'] = 'P/COMPRA'
+    ws['L1'] = 'P/VENTA'
+    ws['M1'] = 'SUBTOTAL'
 
     # Iniciar en la 2da fila
     cont = 2
@@ -290,8 +298,9 @@ def report_excel_sale_filter(request):
             ws.cell(row=cont, column=8).value = v['barcode']
             ws.cell(row=cont, column=9).value = v['name']
             ws.cell(row=cont, column=10).value = int(v['cant'])
-            ws.cell(row=cont, column=11).value = int(v['price_sale'])
-            ws.cell(row=cont, column=12).value = int(v['subtotal'])
+            ws.cell(row=cont, column=11).value = ''  # Precio de compra
+            ws.cell(row=cont, column=12).value = int(v['price_sale'])
+            ws.cell(row=cont, column=13).value = int(v['subtotal'])
             cont += 1
 
         cont += 1

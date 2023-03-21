@@ -1,14 +1,16 @@
-{% extends 'core/add.html' %}
+{% extends 'core/list.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
-{% block head %}
+{% block title %}{{ content_title }}{% endblock %}
+
+{% block head_list %}
 <!--jQuery UI-->
 <link rel="stylesheet" href="{% static 'core/lib/jquery-ui/css/jquery-ui.min.css' %}">
 <!--select2-->
 <link rel="stylesheet" href="{% static 'core/lib/select2/css/select2.min.css' %}">
 <link rel="stylesheet" href="{% static 'core/lib/select2/css/select2-bootstrap4.min.css' %}">
 {% endblock %}
-{% block title %}{{ content_title }}{% endblock %}
 
 {% block content %}
 <div class="card">
@@ -28,16 +30,17 @@
         </div>
     </div>
 
-    <form class="card-body">
-        <form id="dato_prov">
+    <div class="card-body">
+        <form method="post" class="form-validate" id="form-general">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="{{action}}">
             <div class="row">
                 <div class="col-lg-8">
                     <div class="card">
                         <div class="card-header bg-gradient-secondary">
-                            <h3 class="card-title">Buscador de productos por codigo y nombre</h3>
+                            <h3 class="card-title">Detalle de Productos</h3>
                             <div class="card-tools">
-                                <button type="button" id ="btn_add" onclick="add_product()"class="btn bg-gradient-primary"
-                                    data-target="#modal-product" data-toggle="modal">
+                                <button type="button" id="btn_new_product" class="btn bg-gradient-primary" data-toggle="modal" data-target="#myModalProduct">
                                     <i class="fas fa-plus-circle"></i> Nuevo Producto
                                 </button>
                             </div>
@@ -45,57 +48,20 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col">
-                                    <label>{{form.product.label}}</label>
+                                    <label>Buscar productos</label>
                                     <div class="form-group">
-                                        <!--{{form.product}}-->
                                         <!--BUSCADOR DE PRODUCTOS-->
-                                        <input type="text" id="listado" oninput="buy.buscarproductos()"
-                                            class="form-control" 
-                                            placeholder="Ingrese Código de Barra o Nombre del Producto">
-                                    </div>
-                                    <!--Mostrar resultados de los productos-->
-                                    <ul id="resultado"></ul>
-                                </div>
-                                <!-- <div class="col-lg-1 col-md-2 col-sm-6 col-xs-12 mb-1">
-                                    <label>Cantidad</label>
-                                    <div class="form-group">
-                                        <input type="number" class="form-control" id="id_cant" value="0">
-                                    </div>
-
-                                </div>
-                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 mb-1">
-                                    <label>P/Compra (PC)</label>
-                                    <div class="form-group">
-                                        <input type="number" id="id_price_purchase" class="form-control" value="0">
+                                        <input type="text" id="id-products-autocomplete" class="form-control" placeholder="Ingrese Código de Barra o Nombre del Producto" autocomplete="off">
                                     </div>
                                 </div>
-                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 mb-1">
-                                    <label>P/Venta</label>
-                                    <div class="form-group">
-                                        <input type="number" id="id_price_sale" class="form-control" value="0">
-                                    </div>
-                                </div>
-                                <div class="col-lg-2 col-md-4 col-sm-6 col-xs-12 mb-1">
-                                    <label for="id_subtotal">Subtotal</label>
-                                    <div class="form-group">
-                                        <input type="number" id="id_subtotal" class="form-control" value="0" readonly>
-                                    </div>
-                                </div> -->
                             </div>
-                            <div class="row d-flex justify-content-end">
-                                <!-- <button type="button" id ="btn_add" onclick="buy.agregar_celda()"class="btn bg-gradient-primary">
-                                    <i class="fas fa-plus-circle"></i> Agregar Producto
-                                </button> -->
-                            </div>
-                            <hr>
 
                             <div class="row">
                                 <div class="col-12 table-responsive">
-                                    <table class="table table-sm table-bordered table-hover">
+                                    <table class="table table-sm table-bordered table-hover" id="tblProducts">
                                         <thead class="bg-light">
                                         <tr>
-
-                                            <th width="45%">Productos Seleccionados</th>
+                                            <th width="30%">Productos Seleccionados</th>
                                             <th width="5%">Cantidad</th>
                                             <th width="15%">Precio Compra</th>
                                             <th width="15%">Precio Venta</th>
@@ -103,11 +69,7 @@
                                             <th width="5%"></th>
                                         </tr>
                                         </thead>
-                                        <form id='form_compra_merc'method="post" action="." class="form-validate" enctype="multipart/form-data">
-                                        <tbody id="product_selected">
-                                        <!-- aqui se pushean los productos seleccionados-->
-                                        </tbody>
-                                        </form>
+                                        <tbody></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -122,19 +84,19 @@
                         </div>
                         <div class="card-body">
                             <div class="form-group">
+                                <label>{{ form.date_register.label }}</label>
+                                {{ form.date_register }}
+                            </div>
+                             <div class="form-group">
                                 <label>{{ form.provider.label }}</label>
                                 <div class="input-group">
                                     {{ form.provider }}
                                     <span class="input-group-append">
-                                    <button onclick="add_provider()" type="button" class="btn bg-gradient-primary" data-toggle="modal" data-target="#modal-provider">
+                                    <button type="button" id="btn_new_provider" class="btn bg-gradient-primary" data-toggle="modal" data-target="#myModalProvider">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                     </span>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label>{{ form.date_register.label }}</label>
-                                {{ form.date_register }}
                             </div>
                             <div class="form-group">
                                 <label>{{ form.n_invoice.label }}</label>
@@ -144,167 +106,105 @@
                                 <label for="id_date_invoice">{{ form.date_invoice.label }}</label>
                                 {{ form.date_invoice }}
                             </div>
-                            <div class="form-group">
-                                <label>{{form.total.label}}</label>
-                                {{form.total}}
+                            <label>Total</label>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                                </div>
+                                <input type="number" name="total" value="0" readonly="" autocomplete="off" class="form-control" required="" id="id_total">
                             </div>
-                            <div class="form-group">
-                                <label>{{ form.total_prod.label }}</label>
-                                {{form.total_prod}}
+                            <label>Total Productos</label>
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text"><i class="fas fa-cart-plus"></i></span>
+                                </div>
+                                <input type="number" name="total_prod" value="0" readonly="" autocomplete="off" class="form-control" required="" id="id_total_prod" aria-invalid="false">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </form>
 
-        <div class="d-flex justify-content-end">
-            <a href="{{ list_url }}" class="btn bg-gradient-secondary mr-2">
-                <i class="fas fa-times"></i> Cancelar
-            </a>
-            <button type="button" class="btn bg-gradient-success" onclick="buy.guardar_compra()">
-                <i class="fas fa-save"></i>
-                Guardar
-            </button>
-        </div>
-    </form>
-    </div>
-    <!-- /.card-body -->
-</div>
-
-<div class="modal fade" id="modal-provider" data-backdrop="static"></div>
-<div class="modal fade" id="modal-product" data-backdrop="static"></div>
-{% endblock %}
-
-
-{% block add %}
-<!--<script src="{% static 'core/js/add_buy.js' %}"></script>-->
-function add_provider(){
-    let modal = document.getElementById('modal-provider');
-    let html;
-
-    html = `
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Nuevo Proveedor</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
+            {% block btn_add %}
+            <div class="d-flex justify-content-end">
+                <a href="{{ list_url }}" class="btn bg-gradient-secondary mr-2">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn bg-gradient-success">
+                    <i class="fas fa-save"></i>
+                    Guardar
                 </button>
             </div>
-            <div class="modal-body">
-               <form method="" id='nuevo_prov'action="." class="form-validate" enctype="multipart/form-data">
-
-                   <div class="form-group mb-3">
-                        {{form_provider.as_p}}
-                   </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn bg-gradient-success" onclick="buy.new_provider()" >
-                            <i class="fas fa-save"></i>
-                            Guardar
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        <!-- /.modal-content -->
+            {% endblock %}
+        </form>
     </div>
-    <!-- /.modal-dialog -->
-    `;
+</div>
 
-    modal.innerHTML = html;
-}
+{% endblock %}
 
-function add_product(){
-    let modal = document.getElementById('modal-product');
-    let html;
+{% block js %}
+<!--jQuery UI-->
+<script src="{% static 'core/lib/jquery-ui/js/jquery-ui.min.js' %}"></script>
+<!--select2-->
+<script src="{% static 'core/lib/select2/js/select2.full.min.js' %}"></script>
+<script src="{% static 'core/lib/select2/js/i18n/es.js' %}"></script>
+<script src="{% static 'core/js/select2.js' %}"></script>
+<!---->
+<script src="{% static 'buy/js/form.js' %}"></script>
+{% endblock %}
 
-    html = `
-    <form method="" id='form_producto' action="." class="form-validate"></form>
-        <div class="modal-dialog modal-md">
+{% block javascript %}
+<div class="modal fade" id="myModalProduct" data-backdrop="static">
+    <form method="post" class="form-validation" id="formProduct">
+        {% csrf_token %}
+        <div class="modal-dialog modal-dialog-scrollable modal-md">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title">Nuevo Producto</h4>
+                    <h4 class="modal-title text-break">Nuevo Producto</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.name.label}}
-                            </label>
-                            {{ form_product.name }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.barcode.label}}
-                            </label>
-                            {{ form_product.barcode }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.category.label}}
-                            </label>
-                            {{ form_product.category }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.range_stock.label}}
-                            </label>
-                            {{ form_product.range_stock }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.status.label}}
-                            </label>
-                            {{ form_product.status }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-group">
-                            <label>
-                                {{form_product.photo.label}}
-                            </label>
-                            {{ form_product.photo }}
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-end">
-                        <button type="button" onclick="buy.new_product()" class="btn bg-gradient-success">
-                            <i class="fas fa-save"></i>
-                            Guardar
-                        </button>
-                    </div>
+                    <input type="hidden" name="action" value="add_product">
+                    {{form_product.as_p}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn bg-gradient-danger" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn bg-gradient-success">Guardar</button>
                 </div>
             </div>
-            <!-- /.modal-content -->
+        <!-- /.modal-content -->
         </div>
-    </form>
     <!-- /.modal-dialog -->
-    `;
+    </form>
+</div>
 
-    modal.innerHTML = html;
-}
+<div class="modal fade" id="myModalProvider" data-backdrop="static">
+    <form method="post" class="form-validation" id="formProvider">
+        {% csrf_token %}
+        <div class="modal-dialog modal-dialog-scrollable modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title text-break">Nuevo Proveedor</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="action" value="add_provider">
+                    {{form_provider.as_p}}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn bg-gradient-danger" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn bg-gradient-success">Guardar</button>
+                </div>
+            </div>
+        <!-- /.modal-content -->
+        </div>
+    <!-- /.modal-dialog -->
+    </form>
+</div>
 {% endblock %}
 
 
-{% block scripts_buy %}
-    <script type="module" src="/static/js/purchases.js"></script>
-    <!--jQuery UI-->
-    <script src="{% static 'core/lib/jquery-ui/js/jquery-ui.min.js' %}"></script>
-    
-    
-    <script>
-        globalThis.TOKEN="{{csrf_token}}";
-    
-    </script>
-{% endblock %}

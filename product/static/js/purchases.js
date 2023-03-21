@@ -37,15 +37,15 @@ globalThis.buy = new class modulo_compras{
         console.log('iniciando modulo de compras')
         // generear un json con todos los productos
         // hacer una perticion asincrona con fetch
-        fetch('/product/todos_products_compra')
-        .then( (response) => response.json())
-        .then( (data) => {
-            this.todos_los_productos = data;
-            //console.log('todos los productos', this.todos_los_productos)
-        })
-        .catch( (error) => {
-            //console.log('error al cargar los productos', error)
-        })
+//        fetch('/product/todos_products_compra')
+//        .then( (response) => response.json())
+//        .then( (data) => {
+//            this.todos_los_productos = data;
+//            //console.log('todos los productos', this.todos_los_productos)
+//        })
+//        .catch( (error) => {
+//            //console.log('error al cargar los productos', error)
+//        })
 
 
         

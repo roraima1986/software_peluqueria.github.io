@@ -2,7 +2,7 @@ $(function () {
     // jquery validation
     // Validar Rut
     jQuery.validator.addMethod("rutRules", function(value, element) {
-      return this.optional( element ) || /^[0-9]+-[0-9kK]{1}$/.test( value );
+      return this.optional( element ) || /^[0-9]+-[0-9kK]{1}$/.test( value ) || /^([0-9])*$/.test( value );
     }, 'Rut incorrecto');
 
     // Validar Correo
@@ -28,13 +28,13 @@ $(function () {
             rutRules: true,
             minlength: 9
           },
-          start_date: {
+          /*start_date: {
             required: true,
             fechaMenorOIgualA: "#finish_date"
           },
           finish_date: {
             required: true
-          },
+          },*/
           product_name: {
             require_from_group: [1, ".group-filter"]
           },

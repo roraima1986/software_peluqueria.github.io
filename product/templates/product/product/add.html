@@ -2,11 +2,3 @@
 
 {% block title %}{{ content_title }}{% endblock %}
 
-{% block add %}
-function cal_ganancy(){
-    let precio_compra = parseInt(document.getElementById("id_price_purchase").value) || 0;
-    let precio_venta = parseInt(document.getElementById("id_price_sale").value) || 0;
-
-    let ganancy = document.getElementById("id_ganancy").value = precio_venta - precio_compra;
-}
-{% endblock %}

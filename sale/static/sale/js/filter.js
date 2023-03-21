@@ -45,6 +45,15 @@ html = `
                     <label>Personal</label>
                     <select class="form-control select2bs4" name="cbo_user" id="cbo-user"></select>
                 </div>
+                <div class="form-group">
+                    <label>Tipo de Salida</label>
+                    <select class="form-control" name="cbo_type_sale" id="cbo-type-sale">
+                        <option value="">--------</option>
+                        <option value="Venta">Venta</option>
+                        <option value="Merma">Merma</option>
+                        <option value="Personal">Personal</option>
+                    </select>
+                </div>
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" name="chk_anulada">
                     <label>Ventas Anuladas</label>

@@ -75,7 +75,7 @@ let vents = {
                     render: function(data, type, row){
                         let buttons = `
                             <a rel='remove' class="btn btn-sm bg-gradient-danger">
-                                <i class="fas fa-ban"></i>
+                                <i class="fas fa-trash-alt"></i>
                             </a>
                         `;
                         return buttons;
@@ -111,7 +111,7 @@ $(function(){
 
             });
         },
-        minLength:3,
+        minLength:2,
         select: function(event, ui){
             event.preventDefault();
             ui.item.cant = 1;
@@ -164,16 +164,18 @@ $(function(){
         }).done(function(data){
             if(!data.hasOwnProperty('error')){
                 Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: 'Venta guardada exitosamente',
-                    showConfirmButton: false,
-                    timer: 1500
+                    position: 'center',
+                    icon: 'info',
+                    title: 'Venta Guardada Exitosamente',
+                    html: `<p>Compra N°</p>`
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        location.reload();
+                    }
                 });
-                location.reload();
                 return false;
             };
+
             message_error(data.error);
         }).fail(function(jqXHR, textStatus, errorThrown){
             alert(`${textStatus}: ${errorThrown}`)
@@ -194,4 +196,8 @@ $(function(){
     }
 
     setInterval(displayTime, 1000);
+
+    /*$('#id_user').select2({
+        theme: 'bootstrap4'
+     });*/
 });

@@ -18,11 +18,15 @@ class User(AbstractUser):
     allergy = models.CharField(max_length=200, null=True, blank=True, verbose_name='Alergias')
     contact_name = models.CharField(max_length=100, null=True, blank=True, verbose_name='Persona de Contacto')
     contact_phone = models.CharField(max_length=15, null=True, blank=True, verbose_name='Teléfono de Contacto')
-    
+
+    def __str__(self):
+        return '{} - {}'.format(self.username, self.internal_code)
 
     def toJSON(self):
         item = model_to_dict(self)
         item['date_joined'] = self.date_joined.strftime('%d/%m/%Y')
         item['groups'] = [{'id':g.id, 'name':g.name} for g in self.groups.all()]
         return item
+
+
 

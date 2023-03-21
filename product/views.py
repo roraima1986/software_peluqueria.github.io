@@ -1,6 +1,6 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.db.models import F
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -354,7 +354,6 @@ def report_excel_product_all(_request):
     ws.column_dimensions['D'].width = 15
     ws.column_dimensions['E'].width = 15
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 20
 
     # cabecera
     ws['A1'] = 'NOMBRE PRODUCTO'
@@ -362,8 +361,7 @@ def report_excel_product_all(_request):
     ws['C1'] = 'CANT'
     ws['D1'] = 'P/COMPRA'
     ws['E1'] = 'P/VENTA'
-    ws['F1'] = 'GANANCIA'
-    ws['G1'] = 'ESTADO'
+    ws['F1'] = 'ESTADO'
 
     # Iniciar en la 2da fila
     cont = 2
@@ -375,8 +373,7 @@ def report_excel_product_all(_request):
         ws.cell(row=cont, column=3).value = product.cant
         ws.cell(row=cont, column=4).value = product.price_purchase
         ws.cell(row=cont, column=5).value = product.price_sale
-        ws.cell(row=cont, column=6).value = product.ganancy
-        ws.cell(row=cont, column=7).value = product.status
+        ws.cell(row=cont, column=6).value = product.status
 
         cont += 1
 
@@ -427,7 +424,6 @@ def report_excel_product_filter(request):
     ws.column_dimensions['D'].width = 15
     ws.column_dimensions['E'].width = 15
     ws.column_dimensions['F'].width = 15
-    ws.column_dimensions['G'].width = 20
 
     # cabecera
     ws['A1'] = 'NOMBRE PRODUCTO'
@@ -435,8 +431,7 @@ def report_excel_product_filter(request):
     ws['C1'] = 'CANT'
     ws['D1'] = 'P/COMPRA'
     ws['E1'] = 'P/VENTA'
-    ws['F1'] = 'GANANCIA'
-    ws['G1'] = 'ESTADO'
+    ws['F1'] = 'ESTADO'
 
     # Iniciar en la 2da fila
     cont = 2
@@ -448,8 +443,7 @@ def report_excel_product_filter(request):
         ws.cell(row=cont, column=3).value = product.cant
         ws.cell(row=cont, column=4).value = product.price_purchase
         ws.cell(row=cont, column=5).value = product.price_sale
-        ws.cell(row=cont, column=6).value = product.ganancy
-        ws.cell(row=cont, column=7).value = product.status
+        ws.cell(row=cont, column=6).value = product.status
 
         cont += 1
 
@@ -494,6 +488,12 @@ class BuyListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                 data = []
                 for i in Buy.objects.all():
                     data.append(i.toJSON())
+            elif action == 'search_details_prod':
+                data = []
+                purchases = Buy.objects.filter(id=request.POST['id'])
+                for p in purchases:
+                    for det in p.shopping_products:
+                        data.append(det)
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
@@ -517,7 +517,7 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
     template_name = 'product/buy/add.html'
     success_url = reverse_lazy('buy_list')
 
-    @method_decorator(login_required())
+    @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -525,12 +525,73 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         data = {}
         try:
             action = request.POST['action']
-            if action == 'add':
-                form = self.get_form()
-                if form.is_valid():
-                    form.save()
-                else:
-                    data['error'] = form.errors
+            # Buscar productos en el autocomplete
+            if action == 'search_products':
+                data = []
+                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']))[0:10]
+                for i in prods:
+                    item = i.toJSON()
+                    item['value'] = i.name
+                    data.append(item)
+            # Guardar toda la Compra
+            elif action == 'add':
+                buys = json.loads(request.POST['buys'])
+                provider_id = buys['provider']
+                provider = Provider.objects.get(id=provider_id)
+                purchase = Buy()
+                purchase.provider = provider
+                purchase.date_register = buys['date_register']
+                purchase.n_invoice = buys['n_invoice']
+                purchase.date_invoice = buys['date_invoice']
+                purchase.total = int(buys['total'])
+                purchase.total_prod = int(buys['total_prod'])
+                purchase.shopping_products = buys['shopping_products']
+                purchase.save()
+                # Obtener cantidad de los productos de la compra
+                for prod in purchase.shopping_products:
+                    id_buy_prod = prod['id']
+                    cant_buy_prod = prod['cant']
+                    price_purchase_buy_prod = prod['price_purchase']
+                    price_sale_buy_prod = prod['price_sale']
+                    # Obtener productos del inventario
+                    products = Product.objects.get(id=id_buy_prod)
+                    # Sumar productos del inventario
+                    products.cant = int(products.cant) + int(cant_buy_prod)
+                    # Reemplazar precio de compra y precio de venta
+                    products.price_purchase = price_purchase_buy_prod
+                    products.price_sale = price_sale_buy_prod
+                    products.save()
+            # Guardar productos en el modal
+            elif action == 'add_product':
+                prod = Product()
+                prod.name = request.POST['name']
+                prod.barcode = request.POST['barcode']
+                prod.category = Category.objects.get(id=request.POST['category'])
+                prod.range_stock = request.POST['range_stock']
+                prod.status = request.POST['status']
+
+                # En caso de que el rut del proveedor exista
+                buscar = Product.objects.filter(barcode=prod.barcode).exists()
+                if buscar:
+                    data['error'] = 'El código de barra del producto ya existe'
+                    return JsonResponse(data)
+
+                prod.save()
+            # Guardar proveedores en el modal
+            elif action == 'add_provider':
+                prov = Provider()
+                prov.name = request.POST['name']
+                prov.rut = request.POST['rut']
+                prov.phone = request.POST['phone']
+                prov.email = request.POST['email']
+                prov.address = request.POST['address']
+                prov.observation = request.POST['observation']
+                # En caso de que el rut del proveedor exista
+                buscar = Provider.objects.filter(rut=prov.rut).exists()
+                if buscar:
+                    data['error'] = 'El rut de proveedor ya existe'
+                    return JsonResponse(data)
+                prov.save()
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
         except Exception as e:
@@ -545,13 +606,13 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         context['list_url'] = reverse_lazy('buy_list')
         context['action'] = 'add'
         context['form_provider'] = ProviderForm
-        context['form_product'] = ProductForm
+        context['form_product'] = ProductBuyForm
         return context
 
 
 # Registrar Proveedor desde el formulario de Compra
 def new_provider(request):
-        data1={}
+        data1 = {}
 
         try:
             #formulario = self.get_form()
@@ -561,19 +622,19 @@ def new_provider(request):
             email = request.POST['email']
             address = request.POST['address']
             observation = request.POST['observation']
-            
-            buscar=Provider.objects.filter(rut=rut).exists() 
+
+            buscar = Provider.objects.filter(rut=rut).exists()
             if buscar:
-                print('El proveedor ya existe###',buscar, flush=True)
-                data1['error']='El proveedor ya existe'
+                # print('El proveedor ya existe###',buscar, flush=True)
+                data1['error'] = 'El proveedor ya existe'
                 return JsonResponse(data1)
             else:
-                proveedor= Provider.objects.create(
+                proveedor = Provider.objects.create(
                     name=name,
-                    rut=rut, 
-                    phone=phone, 
-                    email=email, 
-                    address=address, 
+                    rut=rut,
+                    phone=phone,
+                    email=email,
+                    address=address,
                     observation=observation
                 )
                 # Traemos son el id nombre y rut de los proveedores
@@ -582,66 +643,65 @@ def new_provider(request):
                 
                 # luego los retornamos en formato lista de la siguiente forma
                 # return JsonResponse(list(data1),safe=False)
-                return JsonResponse(list(data1),safe=False)
-            
+                return JsonResponse(list(data1), safe = False)
+
         except Exception as e:
-            data1['error']=str(e)
+            data1['error'] = str(e)
         return JsonResponse(data1)
 
 
 # Registrar Producto desde el formulario de Compra
 def new_product(request):
-    data2={}
+    data2 = {}
     try:
-        name= request.POST['name']
-        barcode= request.POST['barcode']
-        category= request.POST['category']
-        
-        range_stock= request.POST['range_stock']
-        cant= request.POST.get('cant',0)
-        price_purchase= request.POST.get('price_purchase',0)
-        price_sale= request.POST.get('price_sale',0)
-        status= request.POST['status']
-        
-        # validar datos vacios
-        if not request.FILES:
-            photo=None
-        else:
-            photo= request.FILES['photo']
-        if not range_stock:
-            range_stock=0
-        if not cant:
-            cant=0
-        if not price_purchase:
-            price_purchase=0
-        if not price_sale:
-            price_sale=0
-        if not status:
-            status=1
+        name = request.POST['name']
+        barcode = request.POST['barcode']
+        category = request.POST['category']
+        range_stock = request.POST['range_stock']
+        # cant = request.POST.get('cant',0)
+        # price_purchase = request.POST.get('price_purchase', 0)
+        # price_sale = request.POST.get('price_sale', 0)
+        status = request.POST['status']
 
-        buscar_code=Product.objects.filter(barcode=barcode).exists()
-        buscar_name=Product.objects.filter(name=name)
-        categoria=Category.objects.filter(id=category)
-        
+        # validar datos vacios
+        # if not request.FILES:
+        #     photo = None
+        # else:
+        #     photo = request.FILES['photo']
+        if not range_stock:
+            range_stock = 0
+        # if not cant:
+        #     cant = 0
+        # if not price_purchase:
+        #     price_purchase = 0
+        # if not price_sale:
+        #     price_sale = 0
+        if not status:
+            status = 1
+
+        buscar_code = Product.objects.filter(barcode = barcode).exists()
+        buscar_name = Product.objects.filter(name = name)
+        categoria = Category.objects.filter(id = category)
+
         # validacion de repetido
         if buscar_code or buscar_name:
-            data2['error_dupli']='El producto ya existe'
+            data2['error_dupli'] = 'El producto ya existe'
             return JsonResponse(data2)
         else:
             # continua con el guardado
             producto = Product.objects.create(
-                name=name,
-                barcode=barcode,
-                category=Category.objects.get(id=category),
-                range_stock=range_stock,
-                cant=cant,
-                price_purchase=price_purchase,
-                price_sale=price_sale,
-                status=status,
-                photo=photo
+                name = name,
+                barcode = barcode,
+                category = Category.objects.get(id = category),
+                range_stock = range_stock,
+                # cant = cant,
+                # price_purchase = price_purchase,
+                # price_sale = price_sale,
+                status = status,
+                # photo = photo
             )
             # Traemos todos los productos
-            data2= Product.objects.all().values('id','name','barcode','price_purchase','price_sale')
+            data2 = Product.objects.all().values('id', 'name', 'barcode')
             """ retornar={
                 'id':producto.id,
                 'name':producto.name,
@@ -651,126 +711,8 @@ def new_product(request):
             } """
             return JsonResponse(list(data2), safe=False)
     except Exception as e:
-        data2['error']=str(e)  
-        return JsonResponse(data2) 
-
-
-# Guardar compra de mercancia
-def new_buy(request):
-
-    # Datos estaticos de la compra
-    fecha_factura= request.POST['datos_r[fecha_factura]']
-    id_proveedor= request.POST['datos_r[id_proveedor]']
-    numero_factura= request.POST['datos_r[numero_factura]'] 
-    total_compra= request.POST['datos_r[total_compra]']  
-    total_productos= request.POST['datos_r[total_productos]']
-
-
-
-
-    # validar existencias en la db
-    factura=Buy.objects.filter(n_invoice=numero_factura).exists()
-    proveedor=Provider.objects.filter(id=id_proveedor).exists()
-
-    data1={}
-    listado_productos_save=[]
-
-    # Tomamos la lista y la convertimos en diccionario con json.loads
-    lista_str = request.POST['list_prod[]']
-    lista_diccionario = json.loads(lista_str)
-    
-    #recorrer productos
-    try:
-        if proveedor:
-            if not factura:
-                for i in lista_diccionario['produc']:
-                        id_producto=i['id_producto']
-                        buscar= Product.objects.filter(id=id_producto).exists()
-                        if buscar:
-                            # rellenar el stock de los productos y actualizar los precios de compra y venta
-                            producto=Product.objects.get(id=id_producto)
-                            producto.cant= int(producto.cant) + int(i['cantidad'])
-                            producto.price_purchase=i['precio_compra']
-                            producto.price_sale=i['precio_venta']
-                            #provider=Provider.objects.get(id=id_proveedor)
-                            producto.save()
-
-                            subtotal_prod= int(i['cantidad']) * float(i['precio_compra'])
-                            
-                            listado_productos_save.append({
-                            'product_id': id_producto,
-                            'product_name': producto.name,
-                            'cant': int(i['cantidad']),
-                            'price_purchase': i['precio_compra'],
-                            'price_sale': i['precio_venta'],
-                            'subtotal_prod': subtotal_prod,})
-                        else:
-                            data1['error']='El producto No se encuentra registrado'
-                            return JsonResponse(data1)
-                    
-                    
-                      
-                # Guardar compra en la tabla de compras
-                compra=Buy.objects.create(
-                    provider=Provider.objects.get(id=id_proveedor),
-                    # fecha actual
-                    date_register= datetime.datetime.now(),
-                    n_invoice=numero_factura,
-                    date_invoice=fecha_factura,
-                    product=Product.objects.get(id=id_producto),
-                    #cant= total_productos,
-                    #price_purchase=total_compra,
-                    #price_sale=i['precio_venta'],
-                    #subtotal=i['subtotal'],
-                    total=total_compra,
-                    total_prod=total_productos,
-                    shopping_products=listado_productos_save,
-                )
-            
-            else:
-                data1['error']='El numero de factura ya se encuentra registrado'
-                return JsonResponse(data1)
-        else:
-            data1['error']='El proveedor no se encuentra registrado'
-            return JsonResponse(data1)
-                                
-    
-    except Exception as e:
-        data1['error']=str(e)  
-        return JsonResponse(data1)
-
-    # retonar el exito de la compra    
-    data1['exito']='Compra registrada con exito'
-    return JsonResponse(data1)
-
-
-# Detalle de la compra
-def detail_buy(request):
-    data={}
-    recorrido=[]
-    id_detalle = request.GET['id_detalle']
-    try:
-        compra = Buy.objects.get(id=id_detalle)
-        if compra:
-            for i in compra.shopping_products:
-            # llenamos el objeto data, con la clave y valor del for del detalle
-                data= {
-                    'product_id': i['product_id'],
-                    'product_name': i['product_name'],
-                    'cant': i['cant'],
-                    'price_purchase': i['price_purchase'],
-                    'price_sale': i['price_sale'],
-                    'subtotal_prod': i['subtotal_prod'],
-                }
-                recorrido.append(data)
-        else:
-            data['error']='No se encuentra la compra'
-            return JsonResponse(data)   
-    except Exception as e:
-        data['error']=str(e)  
-        return JsonResponse(data)
-
-    return JsonResponse(recorrido, safe=False)
+        data2['error'] = str(e)
+        return JsonResponse(data2)
 
 
 # Reporte Excel de Compra
@@ -827,7 +769,7 @@ def report_excel_buy_all(_request):
         productos = buy.shopping_products
         # Recorrer lista de productos
         for p in productos:
-            ws.cell(row=cont, column=9).value = p['product_name']
+            ws.cell(row=cont, column=9).value = p['name']
             ws.cell(row=cont, column=10).value = int(p['cant'])
             ws.cell(row=cont, column=11).value = int(p['price_purchase'])
             ws.cell(row=cont, column=12).value = int(p['price_sale'])
@@ -913,7 +855,7 @@ def report_excel_buy_filter(request):
         productos = buy.shopping_products
         # Recorrer lista de productos
         for p in productos:
-            ws.cell(row=cont, column=9).value = p['product_name']
+            ws.cell(row=cont, column=9).value = p['name']
             ws.cell(row=cont, column=10).value = int(p['cant'])
             ws.cell(row=cont, column=11).value = int(p['price_purchase'])
             ws.cell(row=cont, column=12).value = int(p['price_sale'])
@@ -946,10 +888,10 @@ def get_providers(request):
 
 
 # Carga de productos en el menu de compras cuando se hace una buqueda
-def todos_products_compra(request):
-    print("++entro++")
-    data = list(Product.objects.all().values('id','name','barcode','price_purchase','price_sale'))
-    return  JsonResponse(data, safe=False)
+# def todos_products_compra(request):
+#     print("++entro++")
+#     data = list(Product.objects.all().values('id','name','barcode','price_purchase','price_sale'))
+#     return  JsonResponse(data, safe=False)
 
 
 

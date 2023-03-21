@@ -23,18 +23,20 @@ $(function(){
             {"data": "total_prod"},
             {"data": "total_sale"},
             {"data": "is_canceled"},
+            {"data": "type_sale"},
+            {"data": "observation"},
             {"data": "id"},
         ],
         columnDefs: [
             {
-                targets: [-3],
+                targets: [-5],
                 orderable: false,
                 render: function(data, type, row){
                     return '$'+row.total_sale;
                 }
             },
             {
-                targets: [-2],
+                targets: [-4],
                 orderable: false,
                 render: function(data, type, row){
                     let html = '';

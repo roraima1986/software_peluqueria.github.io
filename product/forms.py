@@ -78,9 +78,6 @@ class BuyForm(forms.ModelForm):
             'autofocus': True,
             'class': 'form-control select2bs4',
         }
-        self.fields['product'].widget.attrs = {
-            'class': 'form-control select2bs4',
-        }
 
 
     class Meta:
@@ -95,4 +92,26 @@ class BuyForm(forms.ModelForm):
             'total': forms.NumberInput(attrs={'readonly':True}),
             'total_prod': forms.NumberInput(attrs={'readonly':True}),
         }
+
+
+# Agregar Productos en el formulario de Compra
+class ProductBuyForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for form in self.visible_fields():
+            form.field.widget.attrs['autocomplete'] = 'off'
+            form.field.widget.attrs['class'] = 'form-control'
+        self.fields['name'].widget.attrs['autofocus'] = True
+
+    class Meta:
+        model = Product
+        fields = ['name', 'barcode', 'category', 'range_stock', 'status']
+        widgets = {
+            'name': forms.TextInput(),
+            'range_stock': forms.NumberInput(attrs={'min': 0}),
+        }
+
+
+
+
 

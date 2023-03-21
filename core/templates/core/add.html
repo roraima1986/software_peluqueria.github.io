@@ -93,14 +93,13 @@ $('form').on('submit', function(e){
     }).done(function(data){
         if(!data.hasOwnProperty('error')){
             Swal.fire({
-                toast: true,
-                position: 'top-end',
                 icon: 'success',
                 title: mensaje,
                 showConfirmButton: false,
-                timer: 1500
             });
-            location.href = '{{list_url}}';
+            setTimeout(function() {
+                location.href= '{{list_url}}';
+            }, 500);
             return false;
         };
         message_error(data.error);

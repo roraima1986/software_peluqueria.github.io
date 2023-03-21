@@ -19,15 +19,9 @@ class SaleForm(forms.ModelForm):
         self.fields['user'].widget.attrs['style'] = 'width: 100%'
         grupo = Group.objects.filter(user=user).first()
         if grupo and grupo.name == 'Vendedor':
-            self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor').exclude(is_superuser=True)
+            self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor', is_active=True).exclude(is_superuser=True)
         else:
-            self.fields['user'].queryset = User.objects.all().exclude(is_superuser=True)
-
-
-        # if grupo and grupo.name == 'Vendedor':
-        #     self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor').exclude(is_superuser=True).values_list('internal_code', 'username')
-        # else:
-        #     self.fields['user'].queryset = User.objects.all().exclude(is_superuser=True).values_list('internal_code', 'username')
+            self.fields['user'].queryset = User.objects.filter(is_active=True).exclude(is_superuser=True)
 
     class Meta:
         model = Sale

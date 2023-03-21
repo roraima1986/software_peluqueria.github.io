@@ -19,7 +19,6 @@ $(function(){
             {"data": "cant"},
             {"data": "price_purchase"},
             {"data": "price_sale"},
-            {"data": "ganancy"},
             {"data": "status"},
             {"data": "barcode"},
             {"data": "name"},
@@ -64,7 +63,7 @@ $(function(){
                 }
             },
             {
-                targets: [3, 4, 5],
+                targets: [3, 4],
                 orderable: false,
                 render: function(data, type, row){
                     return '$'+data;
