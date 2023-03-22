@@ -186,10 +186,13 @@ def report_excel_sale_all(_request):
 
         # Recorrer lista de productos
         for v in ventas:
+            # Obtener el producto correspondiente a traves del barcode para encontrar el precio de compra
+            producto = Product.objects.get(barcode=v['barcode'])
+
             ws.cell(row=cont, column=8).value = v['barcode']
             ws.cell(row=cont, column=9).value = v['name']
             ws.cell(row=cont, column=10).value = int(v['cant'])
-            ws.cell(row=cont, column=11).value = '' # Precio de compra
+            ws.cell(row=cont, column=11).value = producto.price_purchase # Precio de compra
             ws.cell(row=cont, column=12).value = int(v['price_sale'])
             ws.cell(row=cont, column=13).value = int(v['subtotal'])
             cont += 1
@@ -293,12 +296,16 @@ def report_excel_sale_filter(request):
 
         # Obtener valores de la lista de productos
         ventas = sale.output_products
+
         # Recorrer lista de productos
         for v in ventas:
+            # Obtener el producto correspondiente a traves del barcode para encontrar el precio de compra
+            producto = Product.objects.get(barcode=v['barcode'])
+
             ws.cell(row=cont, column=8).value = v['barcode']
             ws.cell(row=cont, column=9).value = v['name']
             ws.cell(row=cont, column=10).value = int(v['cant'])
-            ws.cell(row=cont, column=11).value = ''  # Precio de compra
+            ws.cell(row=cont, column=11).value = producto.price_purchase  # Precio de compra
             ws.cell(row=cont, column=12).value = int(v['price_sale'])
             ws.cell(row=cont, column=13).value = int(v['subtotal'])
             cont += 1
