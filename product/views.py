@@ -610,6 +610,44 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         return context
 
 
+# Editar Compra
+class BuyUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    permission_required = 'buy.change_product'
+    model = Buy
+    template_name = 'product/buy/add.html'
+    form_class = BuyForm
+    success_url = reverse_lazy('buy_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super().dispatch(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        data = {}
+        try:
+            action = request.POST['action']
+            if action == 'edit':
+                form = self.get_form()
+                if form.is_valid():
+                    form.save()
+                else:
+                    data['error'] = form.errors
+            else:
+                data['error'] = 'No ha ingresado a ninguna opcion'
+        except Exception as e:
+            data['error'] = str(e)
+        return JsonResponse(data, safe=False)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Compras'
+        context['content_title'] = 'Editar Compra'
+        context['create_url'] = reverse_lazy('buy_add')
+        context['list_url'] = reverse_lazy('buy_list')
+        context['action'] = 'edit'
+        return context
+
+
 # Registrar Proveedor desde el formulario de Compra
 # def new_provider(request):
 #         data1 = {}

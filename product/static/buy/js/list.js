@@ -44,6 +44,9 @@ $(function(){
                             <a  type="button" rel="details" class="btn btn-sm bg-gradient-info mr-2" data-toggle="modal" data-target="#myModalSale">
                                 <i class="fas fa-eye"></i> Detalle
                             </a>
+                            <a href="/product/buy/edit/${row.id}/" class="btn btn-sm bg-gradient-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
                         </div>
                     `;
                     return buttons;
