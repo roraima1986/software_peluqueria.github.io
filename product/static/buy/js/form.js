@@ -178,7 +178,7 @@ $(function(){
         buys.items.provider = $('select[name="provider"]').val();
         buys.items.n_invoice = $('input[name="n_invoice"]').val();
         buys.items.date_invoice = $('input[name="date_invoice"]').val();
-        buys.items.shopping_products['price_sale'] = $('input[name="price_sale"]').val();
+//        buys.items.shopping_products['price_sale'] = $('input[name="price_sale"]').val();
 
         let parameters = new FormData();
         parameters.append('action', $('input[name="action"]').val());
@@ -200,12 +200,11 @@ $(function(){
                 setTimeout(function() {
                     location.href= '/product/buy/list';
                 }, 500);
-                //location.href = '/product/buy/list';
                 return false;
             };
             message_error(data.error);
         }).fail(function(jqXHR, textStatus, errorThrown){
-            alert(`${textStatus}: ${errorThrown}`)
+            alert(`${textStatus}: ${errorThrown} `)
         }).always(function(data){
 
         });
@@ -213,7 +212,6 @@ $(function(){
 
     // Abrir modal de agregar un nuevo producto
     $("#btn_new_product").click(function(){
-        $('input[name="action"]').val('add_product');
         $("#myModalProduct").modal('show');
     });
 
@@ -252,7 +250,6 @@ $(function(){
 
     // Abrir modal de agregar un nuevo producto
     $("#btn_new_provider").click(function(){
-        $('input[name="action"]').val('add_provider');
         $("#myModalProvider").modal('show');
     });
 

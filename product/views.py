@@ -533,34 +533,6 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     item = i.toJSON()
                     item['value'] = i.name
                     data.append(item)
-            # Guardar toda la Compra
-            elif action == 'add':
-                buys = json.loads(request.POST['buys'])
-                provider_id = buys['provider']
-                provider = Provider.objects.get(id=provider_id)
-                purchase = Buy()
-                purchase.provider = provider
-                purchase.date_register = buys['date_register']
-                purchase.n_invoice = buys['n_invoice']
-                purchase.date_invoice = buys['date_invoice']
-                purchase.total = int(buys['total'])
-                purchase.total_prod = int(buys['total_prod'])
-                purchase.shopping_products = buys['shopping_products']
-                purchase.save()
-                # Obtener cantidad de los productos de la compra
-                for prod in purchase.shopping_products:
-                    id_buy_prod = prod['id']
-                    cant_buy_prod = prod['cant']
-                    price_purchase_buy_prod = prod['price_purchase']
-                    price_sale_buy_prod = prod['price_sale']
-                    # Obtener productos del inventario
-                    products = Product.objects.get(id=id_buy_prod)
-                    # Sumar productos del inventario
-                    products.cant = int(products.cant) + int(cant_buy_prod)
-                    # Reemplazar precio de compra y precio de venta
-                    products.price_purchase = price_purchase_buy_prod
-                    products.price_sale = price_sale_buy_prod
-                    products.save()
             # Guardar productos en el modal
             elif action == 'add_product':
                 prod = Product()
@@ -592,6 +564,34 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     data['error'] = 'El rut de proveedor ya existe'
                     return JsonResponse(data)
                 prov.save()
+                # Guardar toda la Compra
+            elif action == 'add':
+                buys = json.loads(request.POST['buys'])
+                provider_id = buys['provider']
+                provider = Provider.objects.get(id=provider_id)
+                purchase = Buy()
+                purchase.provider = provider
+                purchase.date_register = buys['date_register']
+                purchase.n_invoice = buys['n_invoice']
+                purchase.date_invoice = buys['date_invoice']
+                purchase.total = int(buys['total'])
+                purchase.total_prod = int(buys['total_prod'])
+                purchase.shopping_products = buys['shopping_products']
+                purchase.save()
+                # Obtener cantidad de los productos de la compra
+                for prod in purchase.shopping_products:
+                    id_buy_prod = prod['id']
+                    cant_buy_prod = prod['cant']
+                    price_purchase_buy_prod = prod['price_purchase']
+                    price_sale_buy_prod = prod['price_sale']
+                    # Obtener productos del inventario
+                    products = Product.objects.get(id=id_buy_prod)
+                    # Sumar productos del inventario
+                    products.cant = int(products.cant) + int(cant_buy_prod)
+                    # Reemplazar precio de compra y precio de venta
+                    products.price_purchase = price_purchase_buy_prod
+                    products.price_sale = price_sale_buy_prod
+                    products.save()
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
         except Exception as e:
@@ -611,108 +611,108 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
 
 
 # Registrar Proveedor desde el formulario de Compra
-def new_provider(request):
-        data1 = {}
-
-        try:
-            #formulario = self.get_form()
-            name = request.POST['name']
-            rut = request.POST['rut']
-            phone = request.POST['phone']
-            email = request.POST['email']
-            address = request.POST['address']
-            observation = request.POST['observation']
-
-            buscar = Provider.objects.filter(rut=rut).exists()
-            if buscar:
-                # print('El proveedor ya existe###',buscar, flush=True)
-                data1['error'] = 'El proveedor ya existe'
-                return JsonResponse(data1)
-            else:
-                proveedor = Provider.objects.create(
-                    name=name,
-                    rut=rut,
-                    phone=phone,
-                    email=email,
-                    address=address,
-                    observation=observation
-                )
-                # Traemos son el id nombre y rut de los proveedores
-                
-                data1= Provider.objects.all().values('id','name','rut')
-                
-                # luego los retornamos en formato lista de la siguiente forma
-                # return JsonResponse(list(data1),safe=False)
-                return JsonResponse(list(data1), safe = False)
-
-        except Exception as e:
-            data1['error'] = str(e)
-        return JsonResponse(data1)
-
-
-# Registrar Producto desde el formulario de Compra
-def new_product(request):
-    data2 = {}
-    try:
-        name = request.POST['name']
-        barcode = request.POST['barcode']
-        category = request.POST['category']
-        range_stock = request.POST['range_stock']
-        # cant = request.POST.get('cant',0)
-        # price_purchase = request.POST.get('price_purchase', 0)
-        # price_sale = request.POST.get('price_sale', 0)
-        status = request.POST['status']
-
-        # validar datos vacios
-        # if not request.FILES:
-        #     photo = None
-        # else:
-        #     photo = request.FILES['photo']
-        if not range_stock:
-            range_stock = 0
-        # if not cant:
-        #     cant = 0
-        # if not price_purchase:
-        #     price_purchase = 0
-        # if not price_sale:
-        #     price_sale = 0
-        if not status:
-            status = 1
-
-        buscar_code = Product.objects.filter(barcode = barcode).exists()
-        buscar_name = Product.objects.filter(name = name)
-        categoria = Category.objects.filter(id = category)
-
-        # validacion de repetido
-        if buscar_code or buscar_name:
-            data2['error_dupli'] = 'El producto ya existe'
-            return JsonResponse(data2)
-        else:
-            # continua con el guardado
-            producto = Product.objects.create(
-                name = name,
-                barcode = barcode,
-                category = Category.objects.get(id = category),
-                range_stock = range_stock,
-                # cant = cant,
-                # price_purchase = price_purchase,
-                # price_sale = price_sale,
-                status = status,
-                # photo = photo
-            )
-            # Traemos todos los productos
-            data2 = Product.objects.all().values('id', 'name', 'barcode')
-            """ retornar={
-                'id':producto.id,
-                'name':producto.name,
-                'barcode':producto.barcode,
-                'precio_compra':producto.price_purchase,
-                'precio_venta':producto.price_sale,
-            } """
-            return JsonResponse(list(data2), safe=False)
-    except Exception as e:
-        data2['error'] = str(e)
-        return JsonResponse(data2)
+# def new_provider(request):
+#         data1 = {}
+#
+#         try:
+#             #formulario = self.get_form()
+#             name = request.POST['name']
+#             rut = request.POST['rut']
+#             phone = request.POST['phone']
+#             email = request.POST['email']
+#             address = request.POST['address']
+#             observation = request.POST['observation']
+#
+#             buscar = Provider.objects.filter(rut=rut).exists()
+#             if buscar:
+#                 # print('El proveedor ya existe###',buscar, flush=True)
+#                 data1['error'] = 'El proveedor ya existe'
+#                 return JsonResponse(data1)
+#             else:
+#                 proveedor = Provider.objects.create(
+#                     name=name,
+#                     rut=rut,
+#                     phone=phone,
+#                     email=email,
+#                     address=address,
+#                     observation=observation
+#                 )
+#                 # Traemos son el id nombre y rut de los proveedores
+#
+#                 data1= Provider.objects.all().values('id','name','rut')
+#
+#                 # luego los retornamos en formato lista de la siguiente forma
+#                 # return JsonResponse(list(data1),safe=False)
+#                 return JsonResponse(list(data1), safe = False)
+#
+#         except Exception as e:
+#             data1['error'] = str(e)
+#         return JsonResponse(data1)
+#
+#
+# # Registrar Producto desde el formulario de Compra
+# def new_product(request):
+#     data2 = {}
+#     try:
+#         name = request.POST['name']
+#         barcode = request.POST['barcode']
+#         category = request.POST['category']
+#         range_stock = request.POST['range_stock']
+#         # cant = request.POST.get('cant',0)
+#         # price_purchase = request.POST.get('price_purchase', 0)
+#         # price_sale = request.POST.get('price_sale', 0)
+#         status = request.POST['status']
+#
+#         # validar datos vacios
+#         # if not request.FILES:
+#         #     photo = None
+#         # else:
+#         #     photo = request.FILES['photo']
+#         if not range_stock:
+#             range_stock = 0
+#         # if not cant:
+#         #     cant = 0
+#         # if not price_purchase:
+#         #     price_purchase = 0
+#         # if not price_sale:
+#         #     price_sale = 0
+#         if not status:
+#             status = 1
+#
+#         buscar_code = Product.objects.filter(barcode = barcode).exists()
+#         buscar_name = Product.objects.filter(name = name)
+#         categoria = Category.objects.filter(id = category)
+#
+#         # validacion de repetido
+#         if buscar_code or buscar_name:
+#             data2['error_dupli'] = 'El producto ya existe'
+#             return JsonResponse(data2)
+#         else:
+#             # continua con el guardado
+#             producto = Product.objects.create(
+#                 name = name,
+#                 barcode = barcode,
+#                 category = Category.objects.get(id = category),
+#                 range_stock = range_stock,
+#                 # cant = cant,
+#                 # price_purchase = price_purchase,
+#                 # price_sale = price_sale,
+#                 status = status,
+#                 # photo = photo
+#             )
+#             # Traemos todos los productos
+#             data2 = Product.objects.all().values('id', 'name', 'barcode')
+#             """ retornar={
+#                 'id':producto.id,
+#                 'name':producto.name,
+#                 'barcode':producto.barcode,
+#                 'precio_compra':producto.price_purchase,
+#                 'precio_venta':producto.price_sale,
+#             } """
+#             return JsonResponse(list(data2), safe=False)
+#     except Exception as e:
+#         data2['error'] = str(e)
+#         return JsonResponse(data2)
 
 
 # Reporte Excel de Compra

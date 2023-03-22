@@ -102,6 +102,7 @@ class ProductBuyForm(forms.ModelForm):
             form.field.widget.attrs['autocomplete'] = 'off'
             form.field.widget.attrs['class'] = 'form-control'
         self.fields['name'].widget.attrs['autofocus'] = True
+        self.fields['category'].widget.attrs['class'] = 'form-control select2bs4'
 
     class Meta:
         model = Product

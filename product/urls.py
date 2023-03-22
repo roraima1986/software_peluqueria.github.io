@@ -24,7 +24,7 @@ urlpatterns = [
     # Compra
     path('buy/list/', BuyListView.as_view(), name='buy_list'),
     path('buy/add/', BuyCreateView.as_view(), name='buy_add'),
-    path('new_product/', views.new_product, name="new_product"),
+    # path('new_product/', views.new_product, name="new_product"),
     # path('new_buy', views.new_buy, name="new_buy"),
     #carga los productos a comprar
     # path('todos_products_compra/', views.todos_products_compra, name='todos_products_compra'),

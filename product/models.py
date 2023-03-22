@@ -29,7 +29,7 @@ class Category(BaseModel):
     class Meta:
         verbose_name = 'Categoría'
         verbose_name_plural = 'Categorías'
-        ordering = ['-id']
+        ordering = ['-name']
 
 class Provider(BaseModel):
     name = models.CharField(max_length=100, verbose_name='Nombre proveedor')
