@@ -18,6 +18,7 @@ let buys = {
             dict.subtotal_prod = dict.cant * parseInt(dict.price_purchase);
             subtotal_prod += dict.subtotal_prod;
             cant_p += parseInt(dict.cant);
+            dict.price_sale = parseInt(dict.price_sale); // Agregar precio de venta
         });
         this.items.total = subtotal_prod;
         $("input[name='total']").val(this.items.total);
@@ -80,7 +81,7 @@ let buys = {
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
                                 </div>
-                                <input type='number' id='price_sale_p' class='form-control form-control-sm' autocomplete='off' min=0 value=${row.price_sale}>
+                                <input type='number' id='price_sale_p' name='price_sale' class='form-control form-control-sm' autocomplete='off' min=0 value=${row.price_sale}>
                             </div>
                         `;
                     }
@@ -164,6 +165,16 @@ $(function(){
         $('td:eq(4)', tblProducts.row(tr.row).node()).html('$'+buys.items.shopping_products[tr.row].subtotal_prod);
     });
 
+    // Evento Precio de Venta
+    $("#tblProducts").on('change keyup', '#price_sale_p', function(){
+        let price_sale_p = parseInt($(this).val());
+        let tr = tblProducts.cell($(this).closest('td, li')).index();
+        let data = tblProducts.row(tr.row).node();
+        buys.items.shopping_products[tr.row].price_sale = price_sale_p;
+        buys.calculate_buy();
+        $('td:eq(4)', tblProducts.row(tr.row).node()).html('$'+buys.items.shopping_products[tr.row].subtotal_prod);
+    });
+
     // Remover elementos de la tabla
     $('#tblProducts').on('click', 'a[rel="remove"]', function(){
         let tr = tblProducts.cell($(this).closest('td, li')).index();
@@ -178,7 +189,6 @@ $(function(){
         buys.items.provider = $('select[name="provider"]').val();
         buys.items.n_invoice = $('input[name="n_invoice"]').val();
         buys.items.date_invoice = $('input[name="date_invoice"]').val();
-//        buys.items.shopping_products['price_sale'] = $('input[name="price_sale"]').val();
 
         let parameters = new FormData();
         parameters.append('action', $('input[name="action"]').val());
@@ -217,36 +227,36 @@ $(function(){
 
     // Evento submit de guardar productos desde modal
     $('#formProduct').on('submit', function(e){
-            e.preventDefault();
-            let parameters = new FormData(this);
-            $.ajax({
-                url: window.location.pathname,
-                type: "POST",
-                data: parameters,
-                dataType: "json",
-                processData: false,
-                contentType: false
-            }).done(function(data){
-                if(!data.hasOwnProperty('error')){
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Producto guardado exitosamente',
-                        showConfirmButton: false,
-                        timer: 500
-                    });
-                    setTimeout(function() {
-                        $("#myModalProduct").modal('hide');
-                    }, 500);
-                    return false;
-                };
-                message_error(data.error);
-            }).fail(function(jqXHR, textStatus, errorThrown){
-                alert(`${textStatus}: ${errorThrown}`)
-            }).always(function(data){
-
-            });
+        e.preventDefault();
+        let parameters = new FormData(this);
+        $.ajax({
+            url: window.location.pathname,
+            type: "POST",
+            data: parameters,
+            dataType: "json",
+            processData: false,
+            contentType: false
+        }).done(function(data){
+            if(!data.hasOwnProperty('error')){
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Producto guardado exitosamente',
+                    showConfirmButton: false,
+                    timer: 500
+                });
+                setTimeout(function() {
+                    $("#myModalProduct").modal('hide');
+                }, 500);
+                return false;
+            };
+            message_error(data.error);
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            alert(`${textStatus}: ${errorThrown}`)
+        }).always(function(data){
 
         });
+
+    });
 
     // Abrir modal de agregar un nuevo producto
     $("#btn_new_provider").click(function(){

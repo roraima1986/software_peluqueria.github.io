@@ -183,7 +183,6 @@ def report_excel_sale_all(_request):
 
         # Obtener valores de la lista de productos
         ventas = sale.output_products
-
         # Recorrer lista de productos
         for v in ventas:
             # Obtener el producto correspondiente a traves del barcode para encontrar el precio de compra
