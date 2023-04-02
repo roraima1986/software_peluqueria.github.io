@@ -260,6 +260,7 @@ $(function(){
                 });
                 setTimeout(function() {
                     $("#myModalProduct").modal('hide');
+                    $("#formProduct")[0].reset(); // Limpiar los campos del formulario
                 }, 500);
                 return false;
             };
@@ -308,6 +309,7 @@ $(function(){
                     });
                     setTimeout(function() {
                         $("#myModalProvider").modal('hide');
+                        $("#formProvider")[0].reset(); // Limpiar los campos del formulario
                     }, 500);
                     return false;
                 };
