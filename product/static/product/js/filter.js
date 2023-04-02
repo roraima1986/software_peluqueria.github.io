@@ -34,7 +34,7 @@ html = `
                 <div class="form-group">
                     <label>Stock</label>
                     <select class="form-control group-filter" name="cbo_stock" id="cbo-stock">
-                        <option value="" selected>-------</option>
+                        <option value="" selected>-- Todos --</option>
                         <option value="1">Stock Positivo</option>
                         <option value="2" class="text-warning">Stock Por Agotarse</option>
                         <option value="3" class="text-danger">Sin Stock</option>
@@ -43,8 +43,7 @@ html = `
                 <div class="form-group">
                     <label>Estado</label>
                     <select class="form-control group-filter" name="cbo_status" id="cbo-status">
-                        <option value="" selected>-------</option>
-                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="ACTIVO" selected>ACTIVO</option>
                         <option value="INHABILITADO">INHABILITADO</option>
                     </select>
                 </div>
@@ -81,7 +80,7 @@ const listarCategorias = async () => {
         const data = await response.json();
 
         if(data.message === 'Success'){
-            let opciones = `<option value="">----------</option>`;
+            let opciones = `<option value="">-- Todas las Categorías --</option>`;
             let cbo_category = document.getElementById('cbo-category');
 
             data.categories.forEach((category) => {

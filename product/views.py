@@ -358,7 +358,7 @@ def report_excel_product_all(_request):
     # cabecera
     ws['A1'] = 'NOMBRE PRODUCTO'
     ws['B1'] = 'CATEGORIA'
-    ws['C1'] = 'CANT'
+    ws['C1'] = 'STOCK'
     ws['D1'] = 'P/COMPRA'
     ws['E1'] = 'P/VENTA'
     ws['F1'] = 'ESTADO'
@@ -370,7 +370,7 @@ def report_excel_product_all(_request):
     for product in products:
         ws.cell(row=cont, column=1).value = product.name
         ws.cell(row=cont, column=2).value = product.category.name
-        ws.cell(row=cont, column=3).value = product.cant
+        ws.cell(row=cont, column=3).value = product.stock
         ws.cell(row=cont, column=4).value = product.price_purchase
         ws.cell(row=cont, column=5).value = product.price_sale
         ws.cell(row=cont, column=6).value = product.status
@@ -405,11 +405,11 @@ def report_excel_product_filter(request):
 
     # Filtro de stock de productos
     if cbo_stock == '1':
-        products = products.filter(cant__gt=0)
+        products = products.filter(stock__gt=0)
     if cbo_stock == '2':
-        products = products.filter(cant__gt=0, cant__lte=F('range_stock'))
+        products = products.filter(stock__gt=0, stock__lte=F('range_stock'))
     if cbo_stock == '3':
-        products = products.filter(cant__exact=0)
+        products = products.filter(stock__exact=0)
 
     # Filtro de estado
     if cbo_status and cbo_status.strip():
@@ -428,7 +428,7 @@ def report_excel_product_filter(request):
     # cabecera
     ws['A1'] = 'NOMBRE PRODUCTO'
     ws['B1'] = 'CATEGORIA'
-    ws['C1'] = 'CANT'
+    ws['C1'] = 'STOCK'
     ws['D1'] = 'P/COMPRA'
     ws['E1'] = 'P/VENTA'
     ws['F1'] = 'ESTADO'
@@ -440,7 +440,7 @@ def report_excel_product_filter(request):
     for product in products:
         ws.cell(row=cont, column=1).value = product.name
         ws.cell(row=cont, column=2).value = product.category.name
-        ws.cell(row=cont, column=3).value = product.cant
+        ws.cell(row=cont, column=3).value = product.stock
         ws.cell(row=cont, column=4).value = product.price_purchase
         ws.cell(row=cont, column=5).value = product.price_sale
         ws.cell(row=cont, column=6).value = product.status
@@ -494,6 +494,21 @@ class BuyListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                 for p in purchases:
                     for det in p.shopping_products:
                         data.append(det)
+            elif action == 'cancel_sale':
+                purchase_id = request.POST['id']
+                purchase = Buy.objects.get(id=purchase_id)
+                purchase.is_canceled = True
+                purchase.save()
+                data['success'] = 'La compra ha sido cancelada'
+                # Obtener cantidad de los productos de la compra
+                for prod in purchase.shopping_products:
+                    id_purchase_prod = prod['id']
+                    cant_purchase_prod = prod['cant']
+                    # Obtener productos del inventario
+                    products = Product.objects.get(id=id_purchase_prod)
+                    # restar productos del inventario
+                    products.stock = int(products.stock) - int(cant_purchase_prod)
+                    products.save()
             else:
                 data['error'] = 'Ha ocurrido un error'
         except Exception as e:
@@ -549,6 +564,7 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     return JsonResponse(data)
 
                 prod.save()
+
             # Guardar proveedores en el modal
             elif action == 'add_provider':
                 prov = Provider()
@@ -564,7 +580,18 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     data['error'] = 'El rut de proveedor ya existe'
                     return JsonResponse(data)
                 prov.save()
-                # Guardar toda la Compra
+                # Retornar el listado de los proveedores una vez guardados en modal
+                data1 = []
+                listado = Provider.objects.all()
+                for i in listado:
+                    prod = {
+                        'id': i.id,
+                        'name': i.name
+                    }
+                    data1.append(prod)
+                return JsonResponse(data1, safe=False)
+
+            # Guardar toda la Compra
             elif action == 'add':
                 buys = json.loads(request.POST['buys'])
                 provider_id = buys['provider']
@@ -587,7 +614,7 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     # Obtener productos del inventario
                     products = Product.objects.get(id=id_buy_prod)
                     # Sumar productos del inventario
-                    products.cant = int(products.cant) + int(cant_buy_prod)
+                    products.stock = int(products.stock) + int(cant_buy_prod)
                     # Reemplazar precio de compra y precio de venta
                     products.price_purchase = price_purchase_buy_prod
                     products.price_sale = price_sale_buy_prod
@@ -610,150 +637,7 @@ class BuyCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         return context
 
 
-# Editar Compra
-class BuyUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
-    permission_required = 'buy.change_product'
-    model = Buy
-    template_name = 'product/buy/add.html'
-    form_class = BuyForm
-    success_url = reverse_lazy('buy_list')
 
-    def dispatch(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        return super().dispatch(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        data = {}
-        try:
-            action = request.POST['action']
-            if action == 'edit':
-                form = self.get_form()
-                if form.is_valid():
-                    form.save()
-                else:
-                    data['error'] = form.errors
-            else:
-                data['error'] = 'No ha ingresado a ninguna opcion'
-        except Exception as e:
-            data['error'] = str(e)
-        return JsonResponse(data, safe=False)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = 'Compras'
-        context['content_title'] = 'Editar Compra'
-        context['create_url'] = reverse_lazy('buy_add')
-        context['list_url'] = reverse_lazy('buy_list')
-        context['action'] = 'edit'
-        return context
-
-
-# Registrar Proveedor desde el formulario de Compra
-# def new_provider(request):
-#         data1 = {}
-#
-#         try:
-#             #formulario = self.get_form()
-#             name = request.POST['name']
-#             rut = request.POST['rut']
-#             phone = request.POST['phone']
-#             email = request.POST['email']
-#             address = request.POST['address']
-#             observation = request.POST['observation']
-#
-#             buscar = Provider.objects.filter(rut=rut).exists()
-#             if buscar:
-#                 # print('El proveedor ya existe###',buscar, flush=True)
-#                 data1['error'] = 'El proveedor ya existe'
-#                 return JsonResponse(data1)
-#             else:
-#                 proveedor = Provider.objects.create(
-#                     name=name,
-#                     rut=rut,
-#                     phone=phone,
-#                     email=email,
-#                     address=address,
-#                     observation=observation
-#                 )
-#                 # Traemos son el id nombre y rut de los proveedores
-#
-#                 data1= Provider.objects.all().values('id','name','rut')
-#
-#                 # luego los retornamos en formato lista de la siguiente forma
-#                 # return JsonResponse(list(data1),safe=False)
-#                 return JsonResponse(list(data1), safe = False)
-#
-#         except Exception as e:
-#             data1['error'] = str(e)
-#         return JsonResponse(data1)
-#
-#
-# # Registrar Producto desde el formulario de Compra
-# def new_product(request):
-#     data2 = {}
-#     try:
-#         name = request.POST['name']
-#         barcode = request.POST['barcode']
-#         category = request.POST['category']
-#         range_stock = request.POST['range_stock']
-#         # cant = request.POST.get('cant',0)
-#         # price_purchase = request.POST.get('price_purchase', 0)
-#         # price_sale = request.POST.get('price_sale', 0)
-#         status = request.POST['status']
-#
-#         # validar datos vacios
-#         # if not request.FILES:
-#         #     photo = None
-#         # else:
-#         #     photo = request.FILES['photo']
-#         if not range_stock:
-#             range_stock = 0
-#         # if not cant:
-#         #     cant = 0
-#         # if not price_purchase:
-#         #     price_purchase = 0
-#         # if not price_sale:
-#         #     price_sale = 0
-#         if not status:
-#             status = 1
-#
-#         buscar_code = Product.objects.filter(barcode = barcode).exists()
-#         buscar_name = Product.objects.filter(name = name)
-#         categoria = Category.objects.filter(id = category)
-#
-#         # validacion de repetido
-#         if buscar_code or buscar_name:
-#             data2['error_dupli'] = 'El producto ya existe'
-#             return JsonResponse(data2)
-#         else:
-#             # continua con el guardado
-#             producto = Product.objects.create(
-#                 name = name,
-#                 barcode = barcode,
-#                 category = Category.objects.get(id = category),
-#                 range_stock = range_stock,
-#                 # cant = cant,
-#                 # price_purchase = price_purchase,
-#                 # price_sale = price_sale,
-#                 status = status,
-#                 # photo = photo
-#             )
-#             # Traemos todos los productos
-#             data2 = Product.objects.all().values('id', 'name', 'barcode')
-#             """ retornar={
-#                 'id':producto.id,
-#                 'name':producto.name,
-#                 'barcode':producto.barcode,
-#                 'precio_compra':producto.price_purchase,
-#                 'precio_venta':producto.price_sale,
-#             } """
-#             return JsonResponse(list(data2), safe=False)
-#     except Exception as e:
-#         data2['error'] = str(e)
-#         return JsonResponse(data2)
-
-
-# Reporte Excel de Compra
 def report_excel_buy_all(_request):
     buys = Buy.objects.all()
 

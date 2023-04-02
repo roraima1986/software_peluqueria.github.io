@@ -39,7 +39,7 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             action = request.POST['action']
             if action == 'search_products':
                 data = []
-                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']), Q(cant__gt=0), Q(status='ACTIVO'))[:10]
+                prods = Product.objects.filter(Q(name__icontains=request.POST['term']) | Q(barcode__icontains=request.POST['term']), stock__gt=0, status='ACTIVO')[:10]
                 for i in prods:
                     item = i.toJSON()
                     item['value'] = i.name
@@ -56,6 +56,11 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                 sale.total_prod = int(vents['total_prod'])
                 sale.output_products = vents['output_products']
                 sale.save()
+                sale.refresh_from_db()
+                data['id'] = sale.id
+                data['date_creation'] = sale.date_creation.strftime("%d-%m-%Y %H:%M:%S")
+                data['user'] = sale.user.username
+
                 # Obtener cantidad de los productos de la venta
                 for prod in sale.output_products:
                     id_sale_prod = prod['id']
@@ -63,7 +68,7 @@ class SaleCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
                     # Obtener productos del inventario
                     products = Product.objects.get(id=id_sale_prod)
                     # restar productos del inventario
-                    products.cant = int(products.cant) - int(cant_sale_prod)
+                    products.stock = int(products.stock) - int(cant_sale_prod)
                     products.save()
             else:
                 data['error'] = 'No ha ingresado a ninguna opcion'
@@ -117,7 +122,7 @@ class SaleListView(LoginRequiredMixin, PermissionRequiredMixin, ListView):
                     # Obtener productos del inventario
                     products = Product.objects.get(id=id_sale_prod)
                     # restar productos del inventario
-                    products.cant = int(products.cant) + int(cant_sale_prod)
+                    products.stock = int(products.stock) + int(cant_sale_prod)
                     products.save()
             else:
                 data['error'] = 'Ha ocurrido un error'

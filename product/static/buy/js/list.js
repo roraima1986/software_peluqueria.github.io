@@ -24,14 +24,26 @@ $(function(){
             {"data": "date_invoice"},
             {"data": "total_prod"},
             {"data": "total"},
+            {"data": "is_canceled"},
             {"data": "id"},
         ],
         columnDefs: [
             {
-                targets: [-2],
+                targets: [-3],
                 orderable: false,
                 render: function(data, type, row){
                     return '$'+row.total;
+                }
+            },
+            {
+                targets: [-2],
+                orderable: false,
+                render: function(data, type, row){
+                    let html = '';
+                    if(row.is_canceled === true){
+                        html += `<span class="badge badge-light">Anulada</span>`;
+                    }
+                    return html;
                 }
             },
             {
@@ -44,8 +56,8 @@ $(function(){
                             <a  type="button" rel="details" class="btn btn-sm bg-gradient-info mr-2" data-toggle="modal" data-target="#myModalSale">
                                 <i class="fas fa-eye"></i> Detalle
                             </a>
-                            <a href="/product/buy/edit/${row.id}/" class="btn btn-sm bg-gradient-warning">
-                                <i class="fas fa-edit"></i> Editar
+                            <a rel="cancel" class="btn btn-sm bg-gradient-danger">
+                                <i class="fas fa-ban"></i> Anular
                             </a>
                         </div>
                     `;
@@ -57,6 +69,12 @@ $(function(){
         ],
         initComplete: function(settings, json){
             //alert('Tabla cargada');
+        },
+        rowCallback: function(row, data, index) {
+            if (data.is_canceled === true) {
+                $(row).addClass('bg-danger');
+                $(row).find('a[rel="cancel"]').addClass('bg-gradient-danger disabled');
+            }
         },
         "language": {
             "processing": "Procesando...",
@@ -302,7 +320,7 @@ $(function(){
         }
     });
 
-    // Detalle de ventas
+    // Detalle de compras
     $('#data').on('click', 'a[rel="details"]', function(){
         let tr = tblSale.cell($(this).closest('td, li')).index();
         let data = tblSale.row(tr.row).data();
@@ -347,5 +365,50 @@ $(function(){
         });
 
         $("#myModalDet").modal('show');
+    });
+
+    // Anular compras
+    $('#data').on('click', 'a[rel="cancel"]', function(){
+        const saleId = $(this).closest('tr').find('td:first-child').text();
+        Swal.fire({
+            title: 'Anular Compra',
+            text: "Al aceptar esta acción no se podrán deshacer los cambios",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: window.location.pathname,
+                    type: "POST",
+                    data: {
+                        action: 'cancel_sale',
+                        id: saleId
+                    },
+                    dataType: "json"
+//                    processData: false,
+//                    contentType: false
+                }).done(function(data){
+                    if(!data.hasOwnProperty('error')){
+                        Swal.fire(
+                            'Compra Anulada',
+                            'Tu compra ha sido anulada',
+                            'success'
+                        );
+                        $(this).hide();
+                        location.reload();
+                        return false;
+                    };
+                    message_error(data.error);
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    alert(`${textStatus}: ${errorThrown}`)
+                }).always(function(data){
+
+                });
+            }
+        })
     });
 });

@@ -16,7 +16,7 @@ $(function(){
         columns: [
             {"data": "name"},
             {"data": "photo"},
-            {"data": "cant"},
+            {"data": "stock"},
             {"data": "price_purchase"},
             {"data": "price_sale"},
             {"data": "status"},
@@ -46,19 +46,19 @@ $(function(){
                     return `<img src="/media/${row.photo}" style="width:30px; height:30px;" id="photo_product">`;
                 }
             },
-            // Cantidad
+            // Stock
             {
                 targets: [2],
                 orderable: false,
                 render: function(data, type, row){
-                    let cant = row.cant;
+                    let stock = row.stock;
                     let range_stock = row.range_stock
-                    if(cant === 0){
-                        return `<div class="circle circle-danger">${cant}</div>`;
-                    }else if(cant <= range_stock){
-                        return `<div class="circle circle-warning">${cant}</div>`;
+                    if(stock === 0){
+                        return `<div class="circle circle-danger">${stock}</div>`;
+                    }else if(stock <= range_stock){
+                        return `<div class="circle circle-warning">${stock}</div>`;
                     }else{
-                        return `<div class="circle circle-success">${cant}</div>`;
+                        return `<div class="circle circle-success">${stock}</div>`;
                     }
                 }
             },
@@ -92,7 +92,7 @@ $(function(){
                             <!--<a href="#" class="btn btn-sm bg-gradient-success mr-2">
                                 <i class="fas fa-shopping-cart"></i> Agregar
                             </a>-->
-                            <button onclick="detail('${row.name}', '${row.barcode}', '${row.category}', '${row.range_stock}', '${row.cant}', '${row.price_purchase}', '${row.price_sale}', '${row.status}', '${row.photo}')"
+                            <button onclick="detail('${row.name}', '${row.barcode}', '${row.category}', '${row.range_stock}', '${row.stock}', '${row.price_purchase}', '${row.price_sale}', '${row.status}', '${row.photo}')"
                                 class="btn btn-sm bg-gradient-info mr-2" data-toggle="modal" data-target="#myModalProduct">
                                 <i class="fas fa-eye"></i> Detalle
                             </button>
@@ -357,7 +357,7 @@ $(function(){
 
 });
 
-function detail(name, barcode, category, range_stock, cant, price_purchase, price_sale, status, photo){
+function detail(name, barcode, category, range_stock, stock, price_purchase, price_sale, status, photo){
     let modal = document.getElementById('myModalProduct');
     let photoProduct;
 
@@ -401,8 +401,8 @@ function detail(name, barcode, category, range_stock, cant, price_purchase, pric
                                 <td>${range_stock}</td>
                             </tr>
                             <tr>
-                                <th>Cantidad</th>
-                                <td>${cant}</td>
+                                <th>Stock</th>
+                                <td>${stock}</td>
                             </tr>
                             <tr>
                                 <th>Precio Compra</th>

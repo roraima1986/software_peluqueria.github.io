@@ -49,8 +49,8 @@ class ProductForm(forms.ModelForm):
         self.fields['name'].widget.attrs['autofocus'] = True
         self.fields['category'].widget.attrs['class'] = 'form-control select2bs4'
         self.fields['photo'].widget.attrs['class'] = 'form-control-file'
-        self.fields['price_purchase'].widget.attrs['class'] = 'form-control cal-ganancy'
-        self.fields['price_sale'].widget.attrs['class'] = 'form-control cal-ganancy'
+        self.fields['price_purchase'].widget.attrs['class'] = 'form-control'
+        self.fields['price_sale'].widget.attrs['class'] = 'form-control'
 
     class Meta:
         model = Product
@@ -60,10 +60,9 @@ class ProductForm(forms.ModelForm):
             'name': forms.TextInput(),
             'category': forms.Select(attrs={'style': 'width:100%'}),
             'range_stock': forms.NumberInput(attrs={'min': 0}),
-            'cant': forms.NumberInput(attrs={'min': 0}),
-            'price_purchase': forms.NumberInput(attrs={'min': 0, 'oninput':'cal_ganancy()'}),
-            'price_sale': forms.NumberInput(attrs={'min': 0, 'oninput':'cal_ganancy()'}),
-            'ganancy': forms.NumberInput(attrs={'readonly': True, 'oninput':'cal_ganancy()'}),
+            'stock': forms.NumberInput(attrs={'min': 0}),
+            'price_purchase': forms.NumberInput(attrs={'min': 0}),
+            'price_sale': forms.NumberInput(attrs={'min': 0})
         }
 
 

@@ -1,7 +1,5 @@
-from datetime import datetime
 from django import forms
 from django.contrib.auth.models import Group
-
 from .models import *
 from user.models import User
 
@@ -20,6 +18,8 @@ class SaleForm(forms.ModelForm):
         grupo = Group.objects.filter(user=user).first()
         if grupo and grupo.name == 'Vendedor':
             self.fields['user'].queryset = User.objects.filter(groups__name='Vendedor', is_active=True).exclude(is_superuser=True)
+            self.fields['type_sale'].widget.attrs['disabled'] = True
+            self.fields['type_sale'].initial = 'Venta'
         else:
             self.fields['user'].queryset = User.objects.filter(is_active=True).exclude(is_superuser=True)
 
@@ -31,4 +31,6 @@ class SaleForm(forms.ModelForm):
             'total_prod': forms.NumberInput(attrs={'readonly':True}),
             'total_sale': forms.NumberInput(attrs={'readonly':True}),
         }
+
+
 

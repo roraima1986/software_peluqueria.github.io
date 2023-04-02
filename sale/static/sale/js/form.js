@@ -53,7 +53,22 @@ let vents = {
                     orderable: false,
                     render: function(data, type, row){
                         return `<input type='number' id='cant_p' class='form-control form-control-sm' autocomplete='off' min=1 value=${row.cant}>`;
-                    }
+                    },
+                    // Validación de cantidad
+                    createdCell: function (td, cellData, rowData, row, col) {
+                        $(td).find('#cant_p').on('change keyup', function() {
+                            let stock = rowData.stock;
+                            let cant = parseInt($(this).val());
+                            if (cant > stock) {
+                                $(this).val(stock);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'La cantidad ingresada es mayor que el stock actual',
+                                })
+                            }
+                        });
+                    },
                 },
                 {
                     targets: [-3],
@@ -163,11 +178,64 @@ $(function(){
             contentType: false
         }).done(function(data){
             if(!data.hasOwnProperty('error')){
+                // Recorrido de los productos vendidos
+                let productos_vendidos = '';
+                $.each(vents.items.output_products, function(pos, dict){
+                    let fila = `
+                        <tr>
+                          <td>${dict.barcode}</td>
+                          <td>${dict.name}</td>
+                          <td>${dict.cant}</td>
+                          <td>$${dict.price_sale}</td>
+                          <td>$${dict.subtotal}</td>
+                        </tr>
+                    `;
+                    productos_vendidos += fila;
+                });
+
+                // Ticket de aviso exitoso en html
+                let html = `<div class="border text-left p-3">
+                    <div class="d-flex justify-content-between">
+                        <p><b>Venta N°:</b> ${data.id}</p>
+                        <p><b>Fecha/Hora:</b> ${data.date_creation}</p>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <p><b>Personal:</b> ${data.user}</p>
+                        <p><b>Tipo de Venta:</b> ${vents.items.type_sale}</p>
+                    </div>
+                    <p><b>Observación:</b> ${vents.items.observation}</p>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                            <tr class="bg-secondary">
+                                <td width="15%">Código</td>
+                                <td>Productos</td>
+                                <td width="10%">Cant</td>
+                                <td width="15%">Precio</td>
+                                <td width="15%">Subtotal</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                ${productos_vendidos}
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-end">
+                        <p><b>Total General Venta:</b> $${vents.items.total_sale}</p>
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <p><b>N° Productos Vendidos:</b> ${vents.items.total_prod}</p>
+                    </div>
+                </div>`;
+
+                // Alerta de Ticket de aviso exitoso
                 Swal.fire({
                     position: 'center',
-                    icon: 'info',
+                    icon: 'success',
                     title: 'Venta Guardada Exitosamente',
-                    html: `<p>Compra N°</p>`
+                    width: '80%',
+                    backdrop: false,
+                    html: html
                 }).then((result) => {
                     if (result.isConfirmed) {
                         location.reload();
@@ -196,8 +264,4 @@ $(function(){
     }
 
     setInterval(displayTime, 1000);
-
-    /*$('#id_user').select2({
-        theme: 'bootstrap4'
-     });*/
 });

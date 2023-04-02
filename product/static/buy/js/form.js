@@ -6,8 +6,8 @@ let buys = {
         provider: '',
         n_invoice: '',
         date_invoice: '',
-        total: 0,
-        total_prod: 0,
+        total: '',
+        total_prod: '',
         shopping_products: []
     },
     // Calcular valores
@@ -203,13 +203,27 @@ $(function(){
         }).done(function(data){
             if(!data.hasOwnProperty('error')){
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Compra guardada exitosamente',
-                    showConfirmButton: false,
+                    title: '¿Guardar la compra?',
+                    text: "No podras revertir esta acción",
+                    icon: 'warning',
+                    backdrop: false,
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Compra guardada exitosamente',
+                            showConfirmButton: false,
+                        });
+                        setTimeout(function() {
+                            location.href= '/product/buy/list';
+                        }, 500);
+                    }
                 });
-                setTimeout(function() {
-                    location.href= '/product/buy/list';
-                }, 500);
                 return false;
             };
             message_error(data.error);
@@ -276,6 +290,16 @@ $(function(){
                 contentType: false
             }).done(function(data){
                 if(!data.hasOwnProperty('error')){
+                    let opciones;
+                    const proveedores = document.getElementById("id_provider");
+                    console.log('data', data);
+
+                    data.forEach((valor) => {
+                      opciones += `<option value="${valor.id}">${valor.name}</option>`;
+                    });
+                    console.log(opciones);
+                    proveedores.innerHTML = opciones;
+
                     Swal.fire({
                         icon: 'success',
                         title: 'Proveedor guardado exitosamente',

@@ -28,7 +28,7 @@ html = `
                         <div class="row">
                             <label class="col-sm-2 col-form-label">Desde:</label>
                             <div class="form-group col-sm-10">
-                                <input type="date" name="start_date" id="start_date" class="form-control">
+                                <input type="date" name="start_date" id="start_date" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -36,7 +36,7 @@ html = `
                         <div class="row">
                             <label class="col-sm-2 col-form-label">Hasta:</label>
                             <div class="form-group col-sm-10">
-                                <input type="date" name="finish_date" id="finish_date" class="form-control">
+                                <input type="date" name="finish_date" id="finish_date" class="form-control" required>
                             </div>
                         </div>
                     </div>
@@ -48,8 +48,7 @@ html = `
                 <div class="form-group">
                     <label>Tipo de Salida</label>
                     <select class="form-control" name="cbo_type_sale" id="cbo-type-sale">
-                        <option value="">--------</option>
-                        <option value="Venta">Venta</option>
+                        <option value="Venta" selected>Venta</option>
                         <option value="Merma">Merma</option>
                         <option value="Personal">Personal</option>
                     </select>
@@ -91,7 +90,7 @@ const listarUsers = async () => {
         const data = await response.json();
 
         if(data.message === 'Success'){
-            let opciones = `<option value="">----------</option>`;
+            let opciones = `<option value="">-- Todos los Usuarios --</option>`;
             let cbo_user = document.getElementById('cbo-user');
 
             data.users.forEach((user) => {
