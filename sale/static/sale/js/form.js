@@ -52,7 +52,10 @@ let vents = {
                     targets: [2],
                     orderable: false,
                     render: function(data, type, row){
-                        return `<input type='number' id='cant_p' class='form-control form-control-sm' autocomplete='off' min=1 value=${row.cant}>`;
+                        return `<div class="form-group">
+                                <input type='number' id='cant_p' class='form-control form-control-sm' autocomplete='off' min=1 value=${row.cant}>
+                            </div>
+                        `;
                     },
                     // Validación de cantidad
                     createdCell: function (td, cellData, rowData, row, col) {
@@ -65,6 +68,14 @@ let vents = {
                                     icon: 'error',
                                     title: 'Oops...',
                                     text: 'La cantidad ingresada es mayor que el stock actual',
+                                })
+                            }
+                            if (cant < 0) {
+                                $(this).val(1);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Oops...',
+                                    text: 'La cantidad no puede ser negativa',
                                 })
                             }
                         });

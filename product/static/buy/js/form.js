@@ -193,27 +193,30 @@ $(function(){
         let parameters = new FormData();
         parameters.append('action', $('input[name="action"]').val());
         parameters.append('buys', JSON.stringify(buys.items));
-        $.ajax({
-            url: window.location.pathname,
-            type: "POST",
-            data: parameters,
-            dataType: "json",
-            processData: false,
-            contentType: false
-        }).done(function(data){
-            if(!data.hasOwnProperty('error')){
-                Swal.fire({
-                    title: '¿Guardar la compra?',
-                    text: "No podras revertir esta acción",
-                    icon: 'warning',
-                    backdrop: false,
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
-                }).then((result) => {
-                    if (result.isConfirmed) {
+
+        // Agregamos un mensaje de confirmación utilizando SweetAlert
+        Swal.fire({
+            title: '¿Guardar la compra?',
+            text: "No podrás revertir esta acción",
+            icon: 'warning',
+            backdrop: false,
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Si el usuario hace clic en "Guardar", se ejecuta el proceso de guardado
+                $.ajax({
+                    url: window.location.pathname,
+                    type: "POST",
+                    data: parameters,
+                    dataType: "json",
+                    processData: false,
+                    contentType: false
+                }).done(function(data){
+                    if(!data.hasOwnProperty('error')){
                         Swal.fire({
                             icon: 'success',
                             title: 'Compra guardada exitosamente',
@@ -223,14 +226,15 @@ $(function(){
                             location.href= '/product/buy/list';
                         }, 500);
                     }
-                });
-                return false;
-            };
-            message_error(data.error);
-        }).fail(function(jqXHR, textStatus, errorThrown){
-            alert(`${textStatus}: ${errorThrown} `)
-        }).always(function(data){
+                    else {
+                        message_error(data.error);
+                    }
+                }).fail(function(jqXHR, textStatus, errorThrown){
+                    alert(`${textStatus}: ${errorThrown} `)
+                }).always(function(data){
 
+                });
+            }
         });
     });
 
