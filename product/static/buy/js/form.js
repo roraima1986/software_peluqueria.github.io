@@ -183,14 +183,18 @@ $(function(){
     })
 
     // Evento submit (Guardar Compra)
-    $('#form-general').on('submit', function(e){
-        e.preventDefault();
+    let btnGuardar = document.querySelector('#btn-guardar');
+
+    //form.on('submit', function(e){
+    function guardar(){
+        //e.preventDefault();
         buys.items.date_register = $('input[name="date_register"]').val();
         buys.items.provider = $('select[name="provider"]').val();
         buys.items.n_invoice = $('input[name="n_invoice"]').val();
         buys.items.date_invoice = $('input[name="date_invoice"]').val();
 
-        let parameters = new FormData();
+        //let parameters = new FormData();
+        let parameters = new FormData($('form')[0]);
         parameters.append('action', $('input[name="action"]').val());
         parameters.append('buys', JSON.stringify(buys.items));
 
@@ -236,7 +240,9 @@ $(function(){
                 });
             }
         });
-    });
+    };
+
+    btnGuardar.addEventListener('click', guardar);
 
     // Abrir modal de agregar un nuevo producto
     $("#btn_new_product").click(function(){
@@ -244,9 +250,13 @@ $(function(){
     });
 
     // Evento submit de guardar productos desde modal
-    $('#formProduct').on('submit', function(e){
-        e.preventDefault();
-        let parameters = new FormData(this);
+    let btnGuardarProduct = document.querySelector('#btn-guardar-product');
+
+    //form.on('submit', function(e){
+    function guardarProduct() {
+        //e.preventDefault();
+        //let parameters = new FormData();
+        let parameters = new FormData($('form')[0]);
         $.ajax({
             url: window.location.pathname,
             type: "POST",
@@ -275,17 +285,24 @@ $(function(){
 
         });
 
-    });
+    };
 
-    // Abrir modal de agregar un nuevo producto
+    btnGuardarProduct.addEventListener('click', guardarProduct);
+
+    // Abrir modal de agregar un nuevo proveedor
     $("#btn_new_provider").click(function(){
         $("#myModalProvider").modal('show');
     });
 
-    // Evento submit de guardar productos desde modal
-    $('#formProvider').on('submit', function(e){
-            e.preventDefault();
-            let parameters = new FormData(this);
+    // Evento submit de guardar proveedores desde modal
+    let btnGuardarProvider = document.querySelector('#btn-guardar-provider');
+
+    //form.on('submit', function(e){
+    function guardarProvider() {
+        e.preventDefault();
+        //let parameters = new FormData();
+        let parameters = new FormData($('form')[0]);
+        console.log(parameters);
             $.ajax({
                 url: window.location.pathname,
                 type: "POST",
@@ -324,5 +341,7 @@ $(function(){
 
             });
 
-        });
+        };
+
+    btnGuardarProvider.addEventListener('submit', guardarProvider);
 });

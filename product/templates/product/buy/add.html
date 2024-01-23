@@ -40,9 +40,11 @@
                         <div class="card-header bg-gradient-secondary">
                             <h3 class="card-title">Detalle de Productos</h3>
                             <div class="card-tools">
+                                <!--
                                 <button type="button" id="btn_new_product" class="btn bg-gradient-primary" data-toggle="modal" data-target="#myModalProduct">
                                     <i class="fas fa-plus-circle"></i> Nuevo Producto
                                 </button>
+                                -->
                             </div>
                         </div>
                         <div class="card-body">
@@ -91,11 +93,13 @@
                                 <label>{{ form.provider.label }}</label>
                                 <div class="input-group">
                                     {{ form.provider }}
+                                    <!--
                                     <span class="input-group-append">
-                                    <button type="button" id="btn_new_provider" class="btn bg-gradient-primary" data-toggle="modal" data-target="#myModalProvider">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
+                                        <button type="button" id="btn_new_provider" class="btn bg-gradient-primary" data-toggle="modal" data-target="#myModalProvider">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
                                     </span>
+                                    -->
                                 </div>
                             </div>
                             <div class="form-group">
@@ -132,7 +136,7 @@
                 <a href="{{ list_url }}" class="btn bg-gradient-secondary mr-2">
                     <i class="fas fa-times"></i> Cancelar
                 </a>
-                <button type="submit" class="btn bg-gradient-success">
+                <button type="button" id="btn-guardar" class="btn bg-gradient-success">
                     <i class="fas fa-save"></i>
                     Guardar
                 </button>
@@ -173,7 +177,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn bg-gradient-danger" data-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn bg-gradient-success">Guardar</button>
+                    <button type="button" id="btn-guardar-product" class="btn bg-gradient-success">Guardar</button>
                 </div>
             </div>
         <!-- /.modal-content -->
@@ -199,7 +203,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn bg-gradient-danger" data-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn bg-gradient-success">Guardar</button>
+                    <button type="submit" id="btn-guardar-provider" class="btn bg-gradient-success">Guardar</button>
                 </div>
             </div>
         <!-- /.modal-content -->

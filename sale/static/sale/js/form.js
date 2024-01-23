@@ -139,6 +139,7 @@ $(function(){
         },
         minLength:2,
         select: function(event, ui){
+         console.log('id-products-autocomplete')
             event.preventDefault();
             ui.item.cant = 1;
             ui.item.subtotal = 0;
@@ -152,12 +153,14 @@ $(function(){
     $('#tblProducts')
         // Remover elementos de la table
         .on('click', 'a[rel="remove"]', function(){
+         console.log('Remover elementos de la table')
             let tr = tblProducts.cell($(this).closest('td, li')).index();
             vents.items.output_products.splice(tr.row, 1);
             vents.list();
         })
         // Evento de cantidad
         .on('change keyup', '#cant_p', function(){
+            console.log('Evento de cantidad')
             let = cant_p = parseInt($(this).val());
             let tr = tblProducts.cell($(this).closest('td, li')).index();
             let data = tblProducts.row(tr.row).node();
@@ -171,13 +174,17 @@ $(function(){
     delete vents.items.form;
 
     // Evento submit (Boton Guardar o Procesar)
-    form.on('submit', function(e){
-        e.preventDefault();
+    let btnGuardar = document.querySelector('#btn-guardar');
+
+    //form.on('submit', function(e){
+    function guardar() {
+        //e.preventDefault();
         vents.items.user = $('select[name="user"]').val();
         vents.items.type_sale = $('select[name="type_sale"]').val();
         vents.items.observation = $('input[name="observation"]').val();
 
-        let parameters = new FormData();
+        //let parameters = new FormData();
+        let parameters = new FormData($('form')[0]);
         parameters.append('action', $('input[name="action"]').val());
         parameters.append('vents', JSON.stringify(vents.items));
         $.ajax({
@@ -261,7 +268,10 @@ $(function(){
         }).always(function(data){
 
         });
-    });
+    };
+
+    btnGuardar.addEventListener('click', guardar);
+
 
     // Fecha
     let date_sale = document.getElementById('date-sale');

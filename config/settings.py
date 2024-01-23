@@ -83,6 +83,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
+    # Base de datos mysql
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'avilamood_db',
+        'USER': 'root',
+        'PASSWORD': 'iupsm2013',
+        'HOST': 'localhost',
+        'PORT': '3306',
+    }
+
+   # Base de datos postgres
    # 'default': {
    #      'ENGINE': 'django.db.backends.postgresql',
    #      'NAME': 'db',
@@ -92,10 +103,11 @@ DATABASES = {
    #      'PORT': '5432'
    #  }
 
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    # Base de datos sqlite
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 }
 
 
